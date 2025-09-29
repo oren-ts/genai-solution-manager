@@ -1,0 +1,6 @@
+# Add strings and store the result in a new variable
+
+my_str = "Hello world!"
+new_str = my_str + " - Python Basics"  # Concatenate the original string with an additional phrase to create a new message
+
+print(new_str)
