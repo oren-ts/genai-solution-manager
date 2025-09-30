@@ -31,3 +31,15 @@ f) Erstelle eine Menge mit mindestens drei deiner Lieblingsfrüchte.
 g) Füge der Menge eine neue Frucht hinzu, die noch nicht in der Menge enthalten ist.
 
 h) Erstelle ein Dictionary, dass drei verschiedene Länder als Schlüssel und deren Hauptstädte als Werte enthält.
+
+### Übung 2.5.Ü.01 Datentypen
+
+a) Definiere Variablen für jeden der folgenden Datentypen: int, float, complex, str, tuple, list und set. Verwende für die Definition dieser Variablen Werte deiner Wahl, aber achte darauf, dass die Werte repräsentativ für den jeweiligen Datentyp sind.
+
+b) Für jede der definierten Variablen, verwende die Funktion type() und drucke den Datentyp der Variable in der Konsole aus.
+
+c) Konvertiere die int Variable in einen float und einen str Datentyp und drucke das Ergebnis aus.
+
+d) Erstelle eine neue Liste, die aus den ersten zwei Elementen der ursprünglichen Liste und dem letzten Element der Tupel-Variable besteht. Prüfe, ob das letzte Element des Tupels bereits in der neuen Liste vorhanden ist, bevor du es hinzufügst. Drucke die neue Liste aus.
+
+e) Verwende die set Variable, um ein Element hinzuzufügen, das bereits existiert, und ein neues Element, das noch nicht in der Menge vorhanden ist. Drucke die veränderte Menge aus.
