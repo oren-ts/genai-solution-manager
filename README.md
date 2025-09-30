@@ -13,3 +13,21 @@ c) Berechne die Summe der int- und float-Variablen und speichere das Ergebnis in
 
 d) Füge der Zeichenkette (str) die Zeichenfolge " - Python Basics" hinzu und speichere das Ergebnis in einer neuen Variable.  
 Verwende die print()-Funktion, um das Ergebnis auszugeben.
+
+### Übung 2.4.Ü.01 Datentypen
+
+a) Erstelle eine Liste mit den Namen deiner fünf besten Freunde.
+
+b) Füge der Liste zwei neue Namen hinzu, indem du die append() Methode verwendest.
+
+c) Entferne einen Namen aus der Liste mit der remove() Methode.
+
+d) Erstelle ein Tupel, das drei verschiedene Ganzzahlen enthält.
+
+e) Konvertiere das Tupel in eine Liste und füge eine weitere Ganzzahl hinzu.
+
+f) Erstelle eine Menge mit mindestens drei deiner Lieblingsfrüchte.
+
+g) Füge der Menge eine neue Frucht hinzu, die noch nicht in der Menge enthalten ist.
+
+h) Erstelle ein Dictionary, dass drei verschiedene Länder als Schlüssel und deren Hauptstädte als Werte enthält.
