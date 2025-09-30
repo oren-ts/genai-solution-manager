@@ -1,9 +1,6 @@
 # genai-python-exercises
 My GenAI Solution Manager Python exercises
-## Übung 2.3.Ü.01
-
-**Abschlussbedingungen**    
-**Aufgabe: Datentypen**
+### Übung 2.3.Ü.01 Datentypen
 
 a) Definiere eine Variable für jeden der vier Standard-Datentypen: int, float, complex und str.  
 Für den Datentyp int wähle eine Dezimalzahl, für float eine Zahl mit Nachkommastellen, für complex eine komplexe Zahl und für str eine Zeichenkette deiner Wahl.
