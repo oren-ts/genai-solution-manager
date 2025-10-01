@@ -55,3 +55,15 @@ c) Konvertiere die float Variable in einen int Datentyp und gib das Ergebnis aus
 d) Erstelle eine neue Liste, die aus den ersten zwei Elementen der ursprünglichen Liste und dem letzten Element des Tupels besteht. Gib diese neue Liste aus.
 
 e) Füge der Menge ein neues Element hinzu, das nicht in der Menge enthalten ist, und gib die aktualisierte Menge aus.
+
+### Übung 3.3.Ü.01 EVA-Prinzip, Kommentare
+
+a) Benenne die vier Hauptdatentypen in Python und gib für jeden Datentyp ein Beispiel an.
+
+b) Erstelle eine Liste mit mindestens drei verschiedenen Datentypen und zeige, wie man den Typ jedes Elements in der Liste bestimmt.
+
+c) Beschreibe, wie man eine Ganzzahl (int) in eine Gleitkommazahl (float) umwandelt und gib ein Beispiel dafür.
+
+d) Erkläre, was ein Tupel ist und vergleiche es kurz mit einer Liste hinsichtlich der Änderbarkeit der Elemente.
+
+e) Schreibe ein kurzes Python-Programm, das eine Zeichenkette (str) und eine Ganzzahl (int) nimmt, die Ganzzahl in eine Zeichenkette umwandelt und beide Zeichenketten zusammenfügt. Kommentiere jede Zeile deines Codes, um das EVA-Prinzip (Eingabe, Verarbeitung, Ausgabe) zu demonstrieren.
