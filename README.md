@@ -43,3 +43,15 @@ c) Konvertiere die int Variable in einen float und einen str Datentyp und drucke
 d) Erstelle eine neue Liste, die aus den ersten zwei Elementen der ursprünglichen Liste und dem letzten Element der Tupel-Variable besteht. Prüfe, ob das letzte Element des Tupels bereits in der neuen Liste vorhanden ist, bevor du es hinzufügst. Drucke die neue Liste aus.
 
 e) Verwende die set Variable, um ein Element hinzuzufügen, das bereits existiert, und ein neues Element, das noch nicht in der Menge vorhanden ist. Drucke die veränderte Menge aus.
+
+### Übung 2.5.Ü.02 Datentypen
+
+a) Definiere Variablen für jeden der folgenden Datentypen: int, float, complex, str, tuple, list, und set. Weise jeder Variablen einen repräsentativen Wert zu. Zum Beispiel könnte die Variable für den Datentyp int den Wert 42 haben.
+
+b) Für jede definierte Variable, verwende die type() Funktion, um den Datentyp der Variable zu überprüfen. Gib das Ergebnis mit der print() Funktion aus, sodass für jede Variable eine Zeile in der Form "Der Datentyp von [Variable] ist: [Datentyp]" ausgegeben wird.
+
+c) Konvertiere die float Variable in einen int Datentyp und gib das Ergebnis aus. Erkläre in einem Kommentar, was bei der Konvertierung passiert.
+
+d) Erstelle eine neue Liste, die aus den ersten zwei Elementen der ursprünglichen Liste und dem letzten Element des Tupels besteht. Gib diese neue Liste aus.
+
+e) Füge der Menge ein neues Element hinzu, das nicht in der Menge enthalten ist, und gib die aktualisierte Menge aus.
