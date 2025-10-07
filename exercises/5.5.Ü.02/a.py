@@ -1,5 +1,5 @@
 """
-Übung 5.5.Ü.01
+Übung 5.5.Ü.02
 Task (DE): Entwickle ein Python-Programm, das eine Funktion namens umrechner enthält, welche zwei Parameter
            akzeptiert: betrag und waehrung, wobei waehrung einen optionalen Parameter darstellt, der standardmäßig
            auf "USD" gesetzt ist. Die Funktion soll den betrag von Euro in die angegebene Währung umrechnen. Verwende
