@@ -1,0 +1,4 @@
+Name: Anna Müller, StudentID: 12345, Course: Computer Science
+Name: Ben Schmidt, StudentID: 12346, Course: Data Science
+Name: Clara Weber, StudentID: 12347, Course: Artificial Intelligence
+Name: David Fischer, StudentID: 12348, Course: Software Engineering
