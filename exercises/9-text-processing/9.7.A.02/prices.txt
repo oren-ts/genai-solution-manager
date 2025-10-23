@@ -1,0 +1,4 @@
+Product,Price
+Milk,1.29
+Bread,2.49
+Apples,3.19
