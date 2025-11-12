@@ -1,8 +1,5 @@
 # Exercise 2.5.Ü.01 - Recipe App: Widgets, Layout & Design System
 
-**Course:** K4.0082 - No Code Programming mit FlutterFlow  
-**Module:** 02_Grundlagen - Fundamentals (Projects, Pages, UI Building Blocks)
-
 ---
 
 ## 📋 Exercise Overview
