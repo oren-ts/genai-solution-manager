@@ -855,3 +855,320 @@ ELSE:
 - Accommodates users who change their minds or notice errors
 
 ---
+
+---
+
+## Section (d): Complex Control Flow Logic
+## Section (d): Complex Control Flow Logic
+
+### Overview
+
+Complex control flow logic enables the event app to handle sophisticated business rules, dynamic data loading, and conditional calculations. This section demonstrates three critical implementation patterns: multi-condition validation, iterative data loading with different loop types, and dynamic price calculation based on multiple factors.
+
+### 1. Event Registration with Multiple Conditions
+
+#### Business Requirements
+
+When a user attempts to register for an event, the system must verify four critical conditions before allowing registration:
+
+1. **Authentication Status:** User must be logged in (currentUser exists in App State)
+2. **Event Availability:** Event must be active (Event.isActive == true)
+3. **Capacity Check:** Seats must be available (Event.currentAttendees < Event.maxAttendees)
+4. **Duplicate Prevention:** User must not already be registered (Event.eventId not in User.registeredEvents)
+
+#### Implementation Approach: Sequential Validation with Specific Feedback
+
+**Design Decision:** Use **nested conditional checks** (Option B) rather than a single combined AND statement (Option A).
+
+**Rationale:**
+- **User Experience:** Each failed condition provides specific, actionable feedback rather than a generic error
+- **Debugging:** Easier to identify which condition failed during testing
+- **Maintainability:** Clear separation of concerns makes logic easier to modify
+- **User Guidance:** Specific error messages help users understand what they need to do (e.g., "Please log in" vs. "Registration failed")
+
+#### Conditional Logic Flow
+
+```
+User clicks "Register for Event" button
+↓
+Trigger: On Button Click Action
+
+Check 1: Authentication
+IF currentUser == null OR currentUser is not set:
+  → Display error: "Please log in to register for events"
+  → STOP (do not proceed)
+
+Check 2: Event Status
+ELSE IF Event.isActive == false:
+  → Display error: "This event is no longer available for registration"
+  → STOP
+
+Check 3: Capacity
+ELSE IF Event.currentAttendees >= Event.maxAttendees:
+  → Display error: "Sorry, this event is sold out"
+  → STOP
+
+Check 4: Duplicate Registration
+ELSE IF Event.eventId exists in currentUser.registeredEvents:
+  → Display error: "You are already registered for this event"
+  → STOP
+
+All Checks Passed:
+ELSE:
+  → Create new Ticket record
+  → Add Event.eventId to currentUser.registeredEvents
+  → Increment Event.currentAttendees by 1
+  → Display success: "Registration successful!"
+```
+
+#### Error Message Design
+
+Each error message serves a specific purpose:
+
+| Condition Failed | Error Message | User Action Enabled |
+|-----------------|---------------|---------------------|
+| Not logged in | "Please log in to register for events" | Redirect to login page |
+| Event inactive | "This event is no longer available for registration" | Browse other events |
+| Sold out | "Sorry, this event is sold out" | Add to waitlist (future feature) |
+| Already registered | "You are already registered for this event" | View ticket details |
+
+#### Timing of Validation
+
+**Validation occurs AFTER button click** rather than before (e.g., disabling button preemptively).
+
+**Reasoning:**
+- **Data freshness:** Conditions could change between page load and button click (event could sell out)
+- **User trigger:** Validation happens at the moment of user intent
+- **Real-time accuracy:** Always checking against current database state
+- **Clear feedback:** User receives immediate response to their action
+
+**Optional Enhancement:** Button could show a loading state during validation to indicate processing.
+
+---
+
+### 2. Dynamic Event Loading with Loops
+
+#### Business Requirements
+
+The app must load events from an API in an organized, efficient manner:
+- Group events by category (conference, workshop, concert, sports, networking)
+- Support pagination for large result sets
+- Respect maximum event limits to avoid overwhelming users
+- Handle cases where some categories have no events
+
+#### Loop Type Selection
+
+Different loop structures serve different purposes based on what is known at design time:
+
+**FOR EACH Loop (Category Iteration):**
+- **Use Case:** Iterating through EventCategory enum values
+- **Reason:** We have a **fixed, known list** of exactly 5 categories
+- **Advantage:** Clean, readable syntax for finite collections
+- **FlutterFlow Implementation:** "Generate Dynamic Children" with EventCategory enum as source
+
+**WHILE Loop (Pagination):**
+- **Use Case:** Loading paginated event results until condition met
+- **Reason:** We **don't know in advance** how many pages exist for each category
+- **Advantage:** Continues until **dynamic stopping condition** (maxEvents reached OR no more results)
+- **FlutterFlow Implementation:** Action loop with conditional break
+
+#### Implementation Logic
+
+```
+Initialize: 
+- allEvents = empty list
+- maxEventsPerCategory = 20
+
+FOR EACH category IN EventCategory enum values:
+  ↓
+  Initialize pagination for this category:
+  - currentPage = 1
+  - categoryEvents = empty list
+  - moreResultsAvailable = true
+  
+  WHILE (categoryEvents.length < maxEventsPerCategory AND moreResultsAvailable):
+    ↓
+    API Call:
+    - Endpoint: /api/events
+    - Parameters: 
+      * category = current category
+      * page = currentPage
+      * pageSize = 10
+    
+    Response Processing:
+    - pageResults = API response events
+    
+    IF pageResults is empty:
+      → moreResultsAvailable = false
+      → BREAK (exit while loop, move to next category)
+    
+    ELSE:
+      → Add pageResults to categoryEvents
+      → currentPage = currentPage + 1
+      
+      IF categoryEvents.length >= maxEventsPerCategory:
+        → BREAK (limit reached for this category)
+  
+  END WHILE
+  
+  Add categoryEvents to allEvents
+  
+END FOR EACH
+
+Result: allEvents now contains up to maxEventsPerCategory events for each of the 5 categories
+```
+
+#### Loop Type Justification
+
+**Why FOR EACH for categories?**
+- **Known collection:** EventCategory enum has exactly 5 values defined at design time
+- **Predictable iteration:** Must process all categories exactly once
+- **Code clarity:** Intent is clear - "process each category"
+
+**Why WHILE for pagination?**
+- **Unknown iteration count:** Number of pages varies by category and changes over time
+- **Conditional continuation:** Keep going until a condition fails (no more results OR limit reached)
+- **Dynamic stopping:** Can't use FOR loop because total page count is unknown
+
+**Engineering Principle:** "Start simple first, complication is easy" - use the simplest loop structure that fits the use case.
+
+---
+
+### 3. Ticket Price Calculation with Conditional Values
+
+#### Business Requirements
+
+Calculate ticket price dynamically based on ticket type, with clear discount/premium rules:
+
+**Base Price:** Each event has an Event.basePrice (e.g., €100)
+
+**Price Modifiers by Ticket Type:**
+- **Early Bird:** -20% (€80 for €100 base)
+- **Student:** -50% (€50 for €100 base)
+- **VIP:** +100% (€200 for €100 base)
+- **Regular:** No modification (€100 for €100 base)
+
+#### Implementation Approach: Simple Conditional Logic
+
+**Design Philosophy:** Start with straightforward ticket type-based pricing. Complexity (date-based early bird windows, role verification, discount stacking) can be added incrementally if business rules require it.
+
+#### Calculation Logic
+
+```
+FUNCTION calculateTicketPrice(basePrice, ticketType):
+  
+  Input Validation:
+  IF basePrice <= 0:
+    → Return error: "Invalid base price"
+  
+  Price Calculation:
+  
+  IF ticketType == TicketType.early:
+    finalPrice = basePrice × 0.8
+    discount = "20% Early Bird discount applied"
+  
+  ELSE IF ticketType == TicketType.student:
+    finalPrice = basePrice × 0.5
+    discount = "50% Student discount applied"
+  
+  ELSE IF ticketType == TicketType.vip:
+    finalPrice = basePrice × 2.0
+    premium = "VIP upgrade: +100%"
+  
+  ELSE IF ticketType == TicketType.regular:
+    finalPrice = basePrice
+    discount = "Standard pricing"
+  
+  ELSE:
+    → Return error: "Invalid ticket type"
+  
+  RETURN {
+    originalPrice: basePrice,
+    finalPrice: finalPrice,
+    modifier: discount OR premium,
+    savings: basePrice - finalPrice (if discount applied)
+  }
+```
+
+#### Example Calculations
+
+| Event Base Price | Ticket Type | Calculation | Final Price | Modifier |
+|-----------------|-------------|-------------|-------------|----------|
+| €100 | Early Bird | 100 × 0.8 | €80 | -20% |
+| €100 | Student | 100 × 0.5 | €50 | -50% |
+| €100 | VIP | 100 × 2.0 | €200 | +100% |
+| €100 | Regular | 100 × 1.0 | €100 | 0% |
+| €50 | Student | 50 × 0.5 | €25 | -50% |
+| €200 | VIP | 200 × 2.0 | €400 | +100% |
+
+#### User Experience Considerations
+
+**Price Transparency:**
+- Always display both original price and final price when discounts apply
+- Show savings amount: "You save €50 with your Student discount"
+- For VIP, clarify premium value: "VIP access includes exclusive perks"
+
+**Ticket Type Selection:**
+- Only show ticket types that are currently available for the event
+- Validate user eligibility (e.g., require student verification for student tickets)
+- Clearly label early bird availability window
+
+#### Future Complexity Considerations
+
+**The current simple implementation can be extended to handle:**
+
+**Time-Based Early Bird:**
+```
+IF ticketType == TicketType.early:
+  IF current_date > event.earlyBirdDeadline:
+    → Show error: "Early bird period has ended"
+    → Suggest: "Regular tickets are still available"
+  ELSE:
+    → Apply 20% discount
+```
+
+**User Role Verification:**
+```
+IF ticketType == TicketType.student:
+  IF currentUser.role != UserRole.student:
+    → Require student verification
+    → Show: "Please verify your student status"
+  ELSE:
+    → Apply 50% discount
+```
+
+**Discount Stacking:**
+```
+IF ticketType == TicketType.early AND currentUser.role == UserRole.student:
+  → Apply best available discount (50% student) OR
+  → Stack discounts (20% + additional 30%) depending on business rules
+  → Requires policy decision
+```
+
+**Engineering Principle Applied:** "Complication is easy - start simple first." Begin with clear, maintainable logic that handles the core use case. Add complexity only when business requirements demand it, and add it incrementally with proper testing at each stage.
+
+---
+
+### Control Flow Best Practices Demonstrated
+
+**1. User-Centered Error Handling:**
+- Specific error messages guide users toward resolution
+- Sequential validation provides clear feedback at each decision point
+- Errors explain both what went wrong and what the user should do
+
+**2. Appropriate Loop Selection:**
+- FOR EACH for known, finite collections (categories)
+- WHILE for unknown, conditional iterations (pagination)
+- Choice driven by what is known at design time vs. runtime
+
+**3. Maintainable Conditional Logic:**
+- Clear, readable IF-ELSE chains
+- Each condition handles one concern
+- Easy to extend with new ticket types or validation rules
+
+**4. Scalable Architecture:**
+- Simple foundation that can grow in complexity
+- Each component (validation, loading, pricing) is independently testable
+- Clear separation between business logic and UI
+
+---
