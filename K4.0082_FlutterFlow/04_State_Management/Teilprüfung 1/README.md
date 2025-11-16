@@ -1662,3 +1662,329 @@ Page Load:
 - Atomic operations prevent race conditions
 
 ---
+
+# FlutterFlow Teilprüfung 1 - Event App
+
+**Student:** Oren  
+**Course:** GenAI Solution Manager Bootcamp  
+**Date:** November 16, 2025
+
+---
+
+## Section (a): Data Model Design
+
+### Enums Creation
+
+Created enums first before Custom Data Types.
+
+**EventCategory Enum:**
+- Values: conference, workshop, concert, sports, networking
+- Purpose: Defines event types, prevents typing errors
+
+**UserRole Enum:**
+- Values: attendee, organizer, admin, speaker
+- Purpose: User roles for access control
+
+**TicketType Enum:**
+- Values: early, regular, vip, student
+- Purpose: Ticket types for pricing
+
+**Creation:** App Settings → Data Types → "Create Enum" → Add values
+
+---
+
+### Custom Data Types
+
+**Event Data Type:**
+
+| Field Name | Data Type | Purpose |
+|------------|-----------|---------|
+| eventId | String | Unique ID |
+| title | String | Event name |
+| description | String | Event details |
+| category | EventCategory | Uses enum for category |
+| startDate | DateTime | Start time |
+| endDate | DateTime | End time |
+| maxAttendees | Integer | Maximum capacity |
+| currentAttendees | Integer | Current registered count |
+| isActive | Boolean | Active status |
+| ticketTypes | List\<TicketType\> | Available ticket types |
+
+**User Data Type:**
+
+| Field Name | Data Type | Purpose |
+|------------|-----------|---------|
+| userId | String | Unique ID |
+| firstName | String | User first name |
+| lastName | String | User last name |
+| email | String | User email |
+| role | UserRole | Uses enum for role |
+| registeredEvents | List\<String\> | Event IDs user registered for |
+| preferences | String | User preferences |
+
+**Ticket Data Type:**
+
+| Field Name | Data Type | Purpose |
+|------------|-----------|---------|
+| ticketId | String | Unique ID |
+| eventId | String | Links to Event |
+| userId | String | Links to User |
+| ticketType | TicketType | Type of ticket |
+| purchaseDate | DateTime | When purchased |
+| price | Double | Ticket price |
+| isValid | Boolean | Valid status |
+
+**Creation:** App Settings → Data Types → "Create Data Type" → Add fields → Choose data types
+
+**Relationships:**
+- User.registeredEvents stores event IDs
+- Ticket.eventId connects to Event
+- Ticket.userId connects to User
+
+---
+
+## Section (b): State Management
+
+### App State Variables
+
+| Variable Name | Data Type | Persistent | Why |
+|--------------|-----------|------------|-----|
+| currentUser | User | Yes | Keep user logged in |
+| userPreferences | UserPreferences | Yes | Save theme/language settings |
+| favoriteEvents | List\<String\> | Yes | Save favorite events |
+| cartItems | List\<Ticket\> | No | Clear cart on restart to prevent old purchases |
+
+**UserPreferences Data Type:**
+- theme: String (light/dark)
+- language: String (en/de)
+- notifications: Boolean
+
+**Creation:** App Settings → App State → Add Variable → Enable "Persist Field" toggle for persistent variables
+
+**Why Persist Some Variables:**
+- currentUser: User stays logged in between sessions
+- userPreferences: Settings don't reset every time
+- favoriteEvents: User's favorites are saved
+- cartItems NOT persistent: Prevents buying old forgotten tickets
+
+---
+
+### Page State Variables (EventListPage)
+
+| Variable Name | Data Type | Purpose |
+|--------------|-----------|---------|
+| selectedCategory | EventCategory | Currently selected category filter |
+| searchQuery | String | User's search text |
+| currentPage | Integer | Pagination number |
+| isGridView | Boolean | Grid vs list view toggle |
+| filteredEvents | List\<Event\> | Filtered event results |
+
+**Creation:** Select EventListPage → Page State → Add Variable
+
+**Why Page State:**
+- These variables only needed on EventListPage
+- Reset when user leaves page
+- Gives clean start each time user returns
+
+---
+
+## Section (c): Multi-Step Registration Form
+
+### Form Steps
+
+**Step 1: Personal Data**
+- Name (TextField, Required)
+- Email (TextField, Email validator, Required)
+
+**Step 2: Preferences**
+- Event Categories (CheckboxGroup with EventCategory enum values)
+- Notifications (Switch widget)
+
+**Step 3: Confirmation**
+- Show summary of entered data
+- Complete Registration button
+
+### Implementation
+
+**Page State Variable:**
+- registrationStep: Integer, Initial Value: 0
+
+**Conditional Visibility:**
+- Step 1 Container: Show when registrationStep == 0
+- Step 2 Container: Show when registrationStep == 1
+- Step 3 Container: Show when registrationStep == 2
+
+**Setup:** Select Container → Visibility → Enable Conditional → Set condition
+
+**Navigation Buttons:**
+
+Next Button:
+```
+Action: Update Page State
+Field: registrationStep
+Update Type: Increment/Decrement
+Value: 1
+```
+
+Back Button:
+```
+Action: Update Page State
+Field: registrationStep  
+Update Type: Increment/Decrement
+Value: -1
+```
+
+**Progress Calculation:**
+- Formula: (registrationStep + 1) / 3 * 100
+- Step 1: 33%
+- Step 2: 66%
+- Step 3: 100%
+
+---
+
+## Section (d): Complex Control Flow Logic
+
+### 1. Event Registration Validation
+
+**Requirement:** Check 4 conditions before allowing registration
+
+**Implementation:** Nested IF statements with specific error messages
+
+```
+IF currentUser == null:
+  → Show error: "Please log in to register"
+  → STOP
+
+ELSE IF Event.isActive == false:
+  → Show error: "Event is no longer available"
+  → STOP
+
+ELSE IF Event.currentAttendees >= Event.maxAttendees:
+  → Show error: "Event is sold out"
+  → STOP
+
+ELSE IF Event.eventId in User.registeredEvents:
+  → Show error: "You're already registered"
+  → STOP
+
+ELSE:
+  → Create Ticket
+  → Add event to User.registeredEvents
+  → Increment Event.currentAttendees
+  → Show: "Registration successful!"
+```
+
+**Why this way:** Each condition gives specific error message so user knows what to do
+
+---
+
+### 2. Dynamic Event Loading with Loops
+
+**FOR EACH Loop (Categories):**
+```
+FOR EACH category IN EventCategory:
+  → Load events for this category
+```
+**Why:** We know there are exactly 5 categories
+
+**WHILE Loop (Pagination):**
+```
+WHILE (eventsLoaded < maxEvents AND moreResults):
+  → API call for next page
+  → Add results to list
+  → Increment page number
+```
+**Why:** We don't know how many pages exist
+
+---
+
+### 3. Ticket Price Calculation
+
+**Base Price:** Event.basePrice (e.g., €100)
+
+**Calculation:**
+```
+IF ticketType == TicketType.early:
+  → finalPrice = basePrice * 0.8  // -20%
+
+ELSE IF ticketType == TicketType.student:
+  → finalPrice = basePrice * 0.5  // -50%
+
+ELSE IF ticketType == TicketType.vip:
+  → finalPrice = basePrice * 2.0  // +100%
+
+ELSE IF ticketType == TicketType.regular:
+  → finalPrice = basePrice
+```
+
+**Examples:**
+- €100 base + Early Bird = €80
+- €100 base + Student = €50
+- €100 base + VIP = €200
+- €100 base + Regular = €100
+
+---
+
+## Section (e): Advanced User Interactivity
+
+### Part 1: Dynamic Event Filters
+
+**Filter Components (Page State):**
+
+1. **Category Filter (CheckboxGroup)**
+   - Variable: selectedCategories (List\<String\>)
+   - Shows all EventCategory values
+   - Multiple selection allowed
+
+2. **Price Range Filter (Slider)**
+   - Variables: minPrice (Double), maxPrice (Double)
+   - User drags handles to set range
+
+3. **Availability Filter (Switch)**
+   - Variable: showOnlyAvailable (Boolean)
+   - Filters events where currentAttendees < maxAttendees
+
+**Filter Update:**
+- User changes filters → Page State updates
+- User clicks "Apply Filters" button → Reload event list with filters
+- "Clear Filters" button → Reset all to defaults
+
+**Why Apply button:** Gives user control to set multiple filters before updating list
+
+---
+
+### Part 2: Smart Form Features
+
+**1. Auto-Complete for City:**
+- Uses existing Event.city data from database
+- User types "Ber" → Shows "Berlin", "Bern"
+- Implementation: TextField onChange → Query database → Show suggestions
+
+**Why existing data:** Only shows cities where events exist in our app
+
+**2. Real-Time Availability Check:**
+- Check 1: When form loads → Show "X seats remaining"
+- Check 2: Every 30 seconds while form open → Update if changed
+- Check 3: On submit → Final check before creating Ticket
+
+**Why multiple checks:** Prevents user from registering for sold out event
+
+**3. Dynamic Phone Number Fields:**
+- Page State: phoneNumbers (List\<String\>)
+- "Add Phone Number" button → Adds new TextField
+- "Remove" button next to each field → Removes from list
+
+**4. Auto-Save Form:**
+- Timer: Every 30 seconds → Save all fields to Page State
+- On navigation away → Save immediately
+- On return: Ask "Restore draft?"
+
+**Why auto-save:** Prevents losing data if user leaves page or app crashes
+
+---
+
+## Implementation Notes
+
+All features were designed in FlutterFlow v6.4.31. Some features like validation logic and progress indicators were planned but not fully implemented due to complexity. The data model, state management, and basic multi-step form were successfully created and tested in FlutterFlow.
+
+---
