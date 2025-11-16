@@ -243,3 +243,615 @@ The current implementation uses Page State for the grid/list view toggle, which 
 This represents a product decision that can be revisited based on real user behavior data.
 
 ---
+
+## Section (d): Complex Control Flow Logic
+
+### Overview
+
+Complex control flow logic enables the event app to handle sophisticated business rules, dynamic data loading, and conditional calculations. This section demonstrates three critical implementation patterns: multi-condition validation, iterative data loading with different loop types, and dynamic price calculation based on multiple factors.
+
+### 1. Event Registration with Multiple Conditions
+
+#### Business Requirements
+
+When a user attempts to register for an event, the system must verify four critical conditions before allowing registration:
+
+1. **Authentication Status:** User must be logged in (currentUser exists in App State)
+2. **Event Availability:** Event must be active (Event.isActive == true)
+3. **Capacity Check:** Seats must be available (Event.currentAttendees < Event.maxAttendees)
+4. **Duplicate Prevention:** User must not already be registered (Event.eventId not in User.registeredEvents)
+
+#### Implementation Approach: Sequential Validation with Specific Feedback
+
+**Design Decision:** Use **nested conditional checks** (Option B) rather than a single combined AND statement (Option A).
+
+**Rationale:**
+- **User Experience:** Each failed condition provides specific, actionable feedback rather than a generic error
+- **Debugging:** Easier to identify which condition failed during testing
+- **Maintainability:** Clear separation of concerns makes logic easier to modify
+- **User Guidance:** Specific error messages help users understand what they need to do (e.g., "Please log in" vs. "Registration failed")
+
+#### Conditional Logic Flow
+
+```
+User clicks "Register for Event" button
+↓
+Trigger: On Button Click Action
+
+Check 1: Authentication
+IF currentUser == null OR currentUser is not set:
+  → Display error: "Please log in to register for events"
+  → STOP (do not proceed)
+
+Check 2: Event Status
+ELSE IF Event.isActive == false:
+  → Display error: "This event is no longer available for registration"
+  → STOP
+
+Check 3: Capacity
+ELSE IF Event.currentAttendees >= Event.maxAttendees:
+  → Display error: "Sorry, this event is sold out"
+  → STOP
+
+Check 4: Duplicate Registration
+ELSE IF Event.eventId exists in currentUser.registeredEvents:
+  → Display error: "You are already registered for this event"
+  → STOP
+
+All Checks Passed:
+ELSE:
+  → Create new Ticket record
+  → Add Event.eventId to currentUser.registeredEvents
+  → Increment Event.currentAttendees by 1
+  → Display success: "Registration successful!"
+```
+
+#### Error Message Design
+
+Each error message serves a specific purpose:
+
+| Condition Failed | Error Message | User Action Enabled |
+|-----------------|---------------|---------------------|
+| Not logged in | "Please log in to register for events" | Redirect to login page |
+| Event inactive | "This event is no longer available for registration" | Browse other events |
+| Sold out | "Sorry, this event is sold out" | Add to waitlist (future feature) |
+| Already registered | "You are already registered for this event" | View ticket details |
+
+#### Timing of Validation
+
+**Validation occurs AFTER button click** rather than before (e.g., disabling button preemptively).
+
+**Reasoning:**
+- **Data freshness:** Conditions could change between page load and button click (event could sell out)
+- **User trigger:** Validation happens at the moment of user intent
+- **Real-time accuracy:** Always checking against current database state
+- **Clear feedback:** User receives immediate response to their action
+
+**Optional Enhancement:** Button could show a loading state during validation to indicate processing.
+
+---
+
+### 2. Dynamic Event Loading with Loops
+
+#### Business Requirements
+
+The app must load events from an API in an organized, efficient manner:
+- Group events by category (conference, workshop, concert, sports, networking)
+- Support pagination for large result sets
+- Respect maximum event limits to avoid overwhelming users
+- Handle cases where some categories have no events
+
+#### Loop Type Selection
+
+Different loop structures serve different purposes based on what is known at design time:
+
+**FOR EACH Loop (Category Iteration):**
+- **Use Case:** Iterating through EventCategory enum values
+- **Reason:** We have a **fixed, known list** of exactly 5 categories
+- **Advantage:** Clean, readable syntax for finite collections
+- **FlutterFlow Implementation:** "Generate Dynamic Children" with EventCategory enum as source
+
+**WHILE Loop (Pagination):**
+- **Use Case:** Loading paginated event results until condition met
+- **Reason:** We **don't know in advance** how many pages exist for each category
+- **Advantage:** Continues until **dynamic stopping condition** (maxEvents reached OR no more results)
+- **FlutterFlow Implementation:** Action loop with conditional break
+
+#### Implementation Logic
+
+```
+Initialize: 
+- allEvents = empty list
+- maxEventsPerCategory = 20
+
+FOR EACH category IN EventCategory enum values:
+  ↓
+  Initialize pagination for this category:
+  - currentPage = 1
+  - categoryEvents = empty list
+  - moreResultsAvailable = true
+  
+  WHILE (categoryEvents.length < maxEventsPerCategory AND moreResultsAvailable):
+    ↓
+    API Call:
+    - Endpoint: /api/events
+    - Parameters: 
+      * category = current category
+      * page = currentPage
+      * pageSize = 10
+    
+    Response Processing:
+    - pageResults = API response events
+    
+    IF pageResults is empty:
+      → moreResultsAvailable = false
+      → BREAK (exit while loop, move to next category)
+    
+    ELSE:
+      → Add pageResults to categoryEvents
+      → currentPage = currentPage + 1
+      
+      IF categoryEvents.length >= maxEventsPerCategory:
+        → BREAK (limit reached for this category)
+  
+  END WHILE
+  
+  Add categoryEvents to allEvents
+  
+END FOR EACH
+
+Result: allEvents now contains up to maxEventsPerCategory events for each of the 5 categories
+```
+
+#### Loop Type Justification
+
+**Why FOR EACH for categories?**
+- **Known collection:** EventCategory enum has exactly 5 values defined at design time
+- **Predictable iteration:** Must process all categories exactly once
+- **Code clarity:** Intent is clear - "process each category"
+
+**Why WHILE for pagination?**
+- **Unknown iteration count:** Number of pages varies by category and changes over time
+- **Conditional continuation:** Keep going until a condition fails (no more results OR limit reached)
+- **Dynamic stopping:** Can't use FOR loop because total page count is unknown
+
+**Engineering Principle:** "Start simple first, complication is easy" - use the simplest loop structure that fits the use case.
+
+---
+
+### 3. Ticket Price Calculation with Conditional Values
+
+#### Business Requirements
+
+Calculate ticket price dynamically based on ticket type, with clear discount/premium rules:
+
+**Base Price:** Each event has an Event.basePrice (e.g., €100)
+
+**Price Modifiers by Ticket Type:**
+- **Early Bird:** -20% (€80 for €100 base)
+- **Student:** -50% (€50 for €100 base)
+- **VIP:** +100% (€200 for €100 base)
+- **Regular:** No modification (€100 for €100 base)
+
+#### Implementation Approach: Simple Conditional Logic
+
+**Design Philosophy:** Start with straightforward ticket type-based pricing. Complexity (date-based early bird windows, role verification, discount stacking) can be added incrementally if business rules require it.
+
+#### Calculation Logic
+
+```
+FUNCTION calculateTicketPrice(basePrice, ticketType):
+  
+  Input Validation:
+  IF basePrice <= 0:
+    → Return error: "Invalid base price"
+  
+  Price Calculation:
+  
+  IF ticketType == TicketType.early:
+    finalPrice = basePrice × 0.8
+    discount = "20% Early Bird discount applied"
+  
+  ELSE IF ticketType == TicketType.student:
+    finalPrice = basePrice × 0.5
+    discount = "50% Student discount applied"
+  
+  ELSE IF ticketType == TicketType.vip:
+    finalPrice = basePrice × 2.0
+    premium = "VIP upgrade: +100%"
+  
+  ELSE IF ticketType == TicketType.regular:
+    finalPrice = basePrice
+    discount = "Standard pricing"
+  
+  ELSE:
+    → Return error: "Invalid ticket type"
+  
+  RETURN {
+    originalPrice: basePrice,
+    finalPrice: finalPrice,
+    modifier: discount OR premium,
+    savings: basePrice - finalPrice (if discount applied)
+  }
+```
+
+#### Example Calculations
+
+| Event Base Price | Ticket Type | Calculation | Final Price | Modifier |
+|-----------------|-------------|-------------|-------------|----------|
+| €100 | Early Bird | 100 × 0.8 | €80 | -20% |
+| €100 | Student | 100 × 0.5 | €50 | -50% |
+| €100 | VIP | 100 × 2.0 | €200 | +100% |
+| €100 | Regular | 100 × 1.0 | €100 | 0% |
+| €50 | Student | 50 × 0.5 | €25 | -50% |
+| €200 | VIP | 200 × 2.0 | €400 | +100% |
+
+#### User Experience Considerations
+
+**Price Transparency:**
+- Always display both original price and final price when discounts apply
+- Show savings amount: "You save €50 with your Student discount"
+- For VIP, clarify premium value: "VIP access includes exclusive perks"
+
+**Ticket Type Selection:**
+- Only show ticket types that are currently available for the event
+- Validate user eligibility (e.g., require student verification for student tickets)
+- Clearly label early bird availability window
+
+#### Future Complexity Considerations
+
+**The current simple implementation can be extended to handle:**
+
+**Time-Based Early Bird:**
+```
+IF ticketType == TicketType.early:
+  IF current_date > event.earlyBirdDeadline:
+    → Show error: "Early bird period has ended"
+    → Suggest: "Regular tickets are still available"
+  ELSE:
+    → Apply 20% discount
+```
+
+**User Role Verification:**
+```
+IF ticketType == TicketType.student:
+  IF currentUser.role != UserRole.student:
+    → Require student verification
+    → Show: "Please verify your student status"
+  ELSE:
+    → Apply 50% discount
+```
+
+**Discount Stacking:**
+```
+IF ticketType == TicketType.early AND currentUser.role == UserRole.student:
+  → Apply best available discount (50% student) OR
+  → Stack discounts (20% + additional 30%) depending on business rules
+  → Requires policy decision
+```
+
+**Engineering Principle Applied:** "Complication is easy - start simple first." Begin with clear, maintainable logic that handles the core use case. Add complexity only when business requirements demand it, and add it incrementally with proper testing at each stage.
+
+---
+
+### Control Flow Best Practices Demonstrated
+
+**1. User-Centered Error Handling:**
+- Specific error messages guide users toward resolution
+- Sequential validation provides clear feedback at each decision point
+- Errors explain both what went wrong and what the user should do
+
+**2. Appropriate Loop Selection:**
+- FOR EACH for known, finite collections (categories)
+- WHILE for unknown, conditional iterations (pagination)
+- Choice driven by what is known at design time vs. runtime
+
+**3. Maintainable Conditional Logic:**
+- Clear, readable IF-ELSE chains
+- Each condition handles one concern
+- Easy to extend with new ticket types or validation rules
+
+**4. Scalable Architecture:**
+- Simple foundation that can grow in complexity
+- Each component (validation, loading, pricing) is independently testable
+- Clear separation between business logic and UI
+
+---
+
+## Section (c): Multi-Step Registration Form
+
+### Overview
+
+The user registration process is implemented as a progressive, multi-step form within a single page. This approach breaks down the registration into three manageable steps, reducing cognitive load and improving completion rates by presenting information sequentially rather than overwhelming users with a long form. Each step focuses on a specific category of information, with validation ensuring data quality before progression.
+
+### Form Structure
+
+The registration form consists of three distinct steps, all contained within a single FlutterFlow page using conditional visibility:
+
+#### Step 1: Personal Data
+**Purpose:** Collect core user identification information
+
+**Fields:**
+- **Name** (TextField)
+  - Validation: Required field
+  - Error message: "Name is required"
+  
+- **Email** (TextField with Email validator)
+  - Validation: Required + valid email format
+  - Format check: Must contain @ symbol and valid domain
+  - Error message: "Please enter a valid email address"
+
+**Next Button Behavior:** Validates both fields before allowing progression to Step 2
+
+---
+
+#### Step 2: Event Preferences
+**Purpose:** Collect user's event interests and communication preferences
+
+**Fields:**
+- **Event Categories** (Multi-select component)
+  - Options: Conference, Workshop, Concert, Sports, Networking
+  - Allows users to select multiple categories of interest
+  - Validation: At least one category must be selected
+  
+- **Notifications** (Toggle/Switch)
+  - Boolean choice: Enable or disable event notifications
+  - Default value: Can be set to true (opt-in) or false (opt-out)
+
+**Navigation:**
+- **Back Button:** Returns to Step 1 without validation
+- **Next Button:** Validates selections before moving to Step 3
+
+---
+
+#### Step 3: Confirmation and Summary
+**Purpose:** Allow users to review their registration details before final submission
+
+**Display Elements:**
+- **Summary Section:** Shows all collected data for review
+  - Personal Data: Name, Email
+  - Selected Categories: List of chosen event types
+  - Notification Preference: Enabled/Disabled status
+  
+- **Edit Option:** Users can click "Back" to modify any information
+
+**Final Action:**
+- **Complete Registration Button:** 
+  - Saves all data to the database (User data type)
+  - Shows success confirmation
+  - Navigates to main app experience or home page
+
+---
+
+### State Management - registrationStep Variable
+
+**Page State Variable:**
+- **Name:** `registrationStep`
+- **Type:** Integer
+- **Possible Values:** 0, 1, 2
+- **Initial Value:** 0 (Step 1)
+
+**Purpose:** Acts as a controller that determines which step container is currently visible to the user.
+
+**Value Mapping:**
+- `registrationStep = 0` → Step 1 (Personal Data) visible
+- `registrationStep = 1` → Step 2 (Preferences) visible
+- `registrationStep = 2` → Step 3 (Confirmation) visible
+
+**How It Works:**
+Each step container has a conditional visibility expression:
+- Step 1 container: Show when `registrationStep == 0`
+- Step 2 container: Show when `registrationStep == 1`
+- Step 3 container: Show when `registrationStep == 2`
+
+Only ONE container is visible at any time, creating the illusion of step progression while remaining on a single page.
+
+---
+
+### Validation Strategy
+
+Validation ensures data quality and prevents users from progressing with incomplete or invalid information.
+
+#### Step 1: Personal Data Validation
+
+**Name Field:**
+- **Validation Type:** Required field check
+- **Implementation:** TextField's "Required" property enabled
+- **Trigger:** On "Next" button click
+- **Behavior if invalid:**
+  - Error message appears below field: "Name is required"
+  - registrationStep remains at 0
+  - User cannot advance to Step 2
+
+**Email Field:**
+- **Validation Type:** Required + Email format
+- **Implementation:** TextField's Email validator
+- **Format Requirements:** 
+  - Must contain @ symbol
+  - Must have valid domain structure (e.g., user@domain.com)
+- **Auto-validation:** FlutterFlow's built-in email validator checks format automatically
+- **Trigger:** On "Next" button click
+- **Behavior if invalid:**
+  - Error message appears: "Please enter a valid email address"
+  - registrationStep remains at 0
+  - User cannot advance to Step 2
+
+**Combined Validation:**
+- BOTH fields must be valid for "Next" button to increment registrationStep
+- If either field is invalid, errors display and progression is blocked
+
+#### Step 2: Preferences Validation
+
+**Event Categories:**
+- **Validation Type:** At least one selection required
+- **Trigger:** On "Next" button click
+- **Behavior if invalid:**
+  - Error message: "Please select at least one event category"
+  - registrationStep remains at 1
+
+**Notifications Toggle:**
+- **No validation required** - Boolean value always valid (true or false)
+
+#### Step 3: Confirmation
+
+**No validation required** - This is a review-only step. All data has already been validated in previous steps.
+
+---
+
+### Navigation Logic
+
+Navigation between steps is controlled by button actions that update the `registrationStep` variable with validation checks.
+
+#### "Next" Button Behavior
+
+**Step 1 → Step 2:**
+```
+Action: On "Next" button click
+1. Validate Name field (required check)
+2. Validate Email field (required + format check)
+3. IF both valid:
+     Update State: registrationStep = 1
+   ELSE:
+     Display error messages on invalid fields
+     registrationStep remains 0
+```
+
+**Step 2 → Step 3:**
+```
+Action: On "Next" button click
+1. Validate at least one category selected
+2. IF valid:
+     Update State: registrationStep = 2
+   ELSE:
+     Display error message
+     registrationStep remains 1
+```
+
+#### "Back" Button Behavior
+
+**No validation when going backward** - Users should be able to freely return to previous steps to review or edit information without restrictions.
+
+**Step 2 → Step 1:**
+```
+Action: On "Back" button click
+Update State: registrationStep = registrationStep - 1 (becomes 0)
+```
+
+**Step 3 → Step 2:**
+```
+Action: On "Back" button click
+Update State: registrationStep = registrationStep - 1 (becomes 1)
+```
+
+**Step 1 Back Button:**
+- **Hidden or Disabled** when registrationStep = 0
+- Prevents registrationStep from becoming negative
+- UX consideration: First step has no previous step to return to
+
+#### "Complete Registration" Button (Step 3 only)
+
+```
+Action: On "Complete Registration" button click
+1. Create User record in database with collected data:
+   - firstName: [name entered]
+   - lastName: [if collected]
+   - email: [email entered]
+   - preferences: [selected categories and notification setting]
+2. Update App State: currentUser = newly created User
+3. Show success message: "Registration successful!"
+4. Navigate to: Main app page or user dashboard
+```
+
+---
+
+### Progress Indicator Implementation
+
+A visual progress indicator helps users understand how far they've progressed through the registration process.
+
+**Calculation Formula:**
+```
+Progress Percentage = ((registrationStep + 1) / totalSteps) × 100
+```
+
+Where:
+- `registrationStep` = current step (0, 1, or 2)
+- `totalSteps` = 3 (total number of steps)
+
+**Progress Values:**
+
+| Current Step | registrationStep Value | Calculation | Progress % |
+|-------------|----------------------|-------------|-----------|
+| Step 1 (Personal Data) | 0 | (0 + 1) / 3 × 100 | 33% |
+| Step 2 (Preferences) | 1 | (1 + 1) / 3 × 100 | 66% |
+| Step 3 (Confirmation) | 2 | (2 + 1) / 3 × 100 | 100% |
+
+**Visual Implementation:**
+- Linear progress bar component
+- Value bound to the calculated percentage
+- Updates automatically when registrationStep changes
+- Optional: Display text "Step X of 3" alongside progress bar
+
+---
+
+### Conditional Button Labels
+
+Button labels change based on the current step to provide clear context about the action being performed.
+
+**Implementation Logic:**
+
+**"Next" Button (Steps 1 & 2):**
+```
+Conditional Display:
+IF registrationStep < 2:
+  Button Text = "Next"
+  Button Visible = True
+ELSE:
+  Button Visible = False
+```
+
+**"Complete Registration" Button (Step 3 only):**
+```
+Conditional Display:
+IF registrationStep == 2:
+  Button Text = "Complete Registration"
+  Button Visible = True
+ELSE:
+  Button Visible = False
+```
+
+**Reasoning:**
+- **"Next"** indicates more steps remain (Steps 1 & 2)
+- **"Complete Registration"** clearly signals the final action (Step 3)
+- Different labels prevent user confusion about whether the form is finished
+- Explicit completion terminology increases user confidence when submitting
+
+---
+
+### User Experience Benefits
+
+**Progressive Disclosure:**
+- Reduces cognitive load by presenting information in digestible chunks
+- Users focus on one category of information at a time
+- Less overwhelming than a single long form
+
+**Validation Feedback:**
+- Immediate error messages prevent invalid data submission
+- Users correct errors before moving forward
+- Reduces frustration of discovering errors after lengthy form completion
+
+**Review Before Submission:**
+- Step 3 confirmation allows users to verify their information
+- Reduces registration errors and support requests
+- Builds user confidence before final commitment
+
+**Progress Transparency:**
+- Visual progress indicator shows users how much remains
+- Encourages completion by showing advancement
+- Reduces form abandonment rates
+
+**Flexible Navigation:**
+- Back button allows users to edit previous responses
+- No validation penalty when reviewing earlier steps
+- Accommodates users who change their minds or notice errors
+
+---
