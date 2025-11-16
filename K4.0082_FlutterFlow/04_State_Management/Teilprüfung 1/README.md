@@ -1172,3 +1172,493 @@ IF ticketType == TicketType.early AND currentUser.role == UserRole.student:
 - Clear separation between business logic and UI
 
 ---
+## Section (e): Advanced User Interactivity Features
+
+### Overview
+
+Advanced user interactivity transforms a basic form-based app into a responsive, intelligent system that anticipates user needs and provides immediate feedback. This section covers two categories of interactive features: dynamic filtering systems that allow users to refine content views in real-time, and smart form behaviors that reduce friction and prevent data loss.
+
+---
+
+## Part 1: Dynamic Event Filters
+
+### Business Requirements
+
+Users browsing events need powerful filtering capabilities to quickly find relevant events from potentially large datasets. The filtering system must be intuitive, responsive, and provide clear feedback about filter states and results.
+
+### Filter Components
+
+#### 1. Multi-Select Category Filter (Choice Chips)
+
+**Widget Type:** ChoiceChips or CheckboxGroup with horizontal scroll
+
+**Purpose:** Allow users to select multiple event categories simultaneously
+
+**Implementation:**
+```
+State Variable (Page State):
+- selectedCategories: List<EventCategory>
+- Initial value: Empty list (show all categories by default)
+
+Display:
+- FOR EACH category in EventCategory enum:
+  → Render chip/checkbox with category name
+  → Visual state: Selected (highlighted) or Unselected
+  
+User Interaction:
+- Click/tap on category chip
+- Toggle selection (add to or remove from selectedCategories list)
+- Multiple categories can be selected simultaneously
+
+Visual Feedback:
+- Selected chips: Primary color, checkmark icon
+- Unselected chips: Secondary/gray color
+- Show count: "3 categories selected"
+```
+
+**UX Consideration:** Start with no categories selected (show all events) rather than pre-selecting any, giving users full control from the start.
+
+---
+
+#### 2. Price Range Filter (Slider)
+
+**Widget Type:** RangeSlider (dual-handle slider)
+
+**Purpose:** Allow users to define minimum and maximum price boundaries
+
+**Implementation:**
+```
+State Variables (Page State):
+- minPrice: Double (initial: 0)
+- maxPrice: Double (initial: 1000 or max event price in database)
+
+Slider Configuration:
+- Min value: 0
+- Max value: Highest ticket price across all events (dynamic)
+- Divisions: 10 (or calculate based on price range)
+- Show labels: Display current min/max values
+
+User Interaction:
+- Drag left handle → adjust minPrice
+- Drag right handle → adjust maxPrice
+- Values update in real-time as user drags
+
+Visual Feedback:
+- Display current range: "€50 - €200"
+- Show how many events match this range
+- Highlight selected range on slider track
+```
+
+**Advanced Feature:** Show distribution histogram beneath slider indicating how many events fall within each price band.
+
+---
+
+#### 3. Availability Filter (Switch)
+
+**Widget Type:** Switch or Toggle
+
+**Purpose:** Allow users to show only events with available seats
+
+**Implementation:**
+```
+State Variable (Page State):
+- showOnlyAvailable: Boolean
+- Initial value: false (show all events by default)
+
+Logic:
+IF showOnlyAvailable == true:
+  → Filter events where: currentAttendees < maxAttendees
+ELSE:
+  → Show all events regardless of availability
+
+Visual Feedback:
+- Switch label: "Only show available events"
+- When enabled: Show count "127 available events"
+- Sold out events: Gray out or hide based on switch state
+```
+
+**UX Consideration:** Default to `false` (show all) so users see the full catalog, but can easily toggle to see only bookable events.
+
+---
+
+### Filter Update Strategy: Hybrid Approach
+
+**Design Decision:** Combine immediate visual feedback with explicit apply action for better user control.
+
+**Rationale:**
+- **User Control:** Prevents frustration from accidental filter changes or mistypes
+- **Thoughtful Selection:** Users can adjust multiple filters before seeing results
+- **Performance:** Avoids excessive API calls or database queries on every single change
+- **Clear Intent:** Explicit "Apply Filters" action confirms user's filtering choices
+
+#### Implementation Flow
+
+```
+Phase 1: Filter Selection (Immediate Visual Feedback)
+
+User interacts with any filter:
+→ Update Page State variable immediately
+→ Show preview of filter state:
+  * "3 categories selected"
+  * "Price range: €50-€200"
+  * "Only available: ON"
+→ Display: "~ 42 events match your filters" (approximate count)
+→ "Apply Filters" button becomes highlighted/enabled
+
+Phase 2: Apply Filters Action
+
+User clicks "Apply Filters" button:
+→ Trigger filter logic:
+  1. Build filter query based on all Page State filter values
+  2. Query events from database/API with filters applied
+  3. Update filteredEvents Page State variable
+  4. Re-render event list with filtered results
+
+→ Show results summary: "Showing 42 events"
+→ Button returns to normal state
+
+Phase 3: Clear Filters Option
+
+"Clear All Filters" button:
+→ Reset all filter Page State variables to defaults
+→ Reload full event list
+→ Visual confirmation: "All filters cleared"
+```
+
+**Benefits of Hybrid Approach:**
+- **Control:** User makes multiple adjustments before committing
+- **Feedback:** Preview shows what will happen without commitment
+- **Performance:** Single query after all filters set, not per-filter-change
+- **Flexibility:** User can experiment with filter combinations
+
+---
+
+### Filter State Management
+
+**Storage Location:** Page State (EventListPage)
+
+**Rationale:**
+- **Page-Specific Context:** Filters are relevant only while browsing events on this page
+- **Fresh Start:** Each visit to EventListPage starts with default filters (user expectations)
+- **No Persistence Needed:** Users typically want to re-evaluate filters each session
+- **Memory Efficiency:** Don't clutter App State with temporary browsing preferences
+
+**Alternative Consideration:** If user research shows that users repeatedly apply the same filters, consider adding "Save Filter Preset" feature that stores to App State for quick recall.
+
+---
+
+## Part 2: Smart Form Features
+
+### Business Requirements
+
+Form interactions should feel intelligent and helpful, reducing user effort through predictive features, real-time validation, flexible input options, and automatic data preservation.
+
+---
+
+### 1. Auto-Complete for City Input
+
+**Purpose:** Help users quickly select cities where events exist, reducing typos and standardizing location data.
+
+**Data Source:** Existing Event.city data from database
+
+**Rationale for Using Existing Event Data:**
+- **Relevance:** Only suggest cities where events actually exist in the app
+- **User Value:** Implicit information - "Berlin has events you can attend"
+- **Data Quality:** Ensures consistency in city naming (no "NYC" vs "New York City" issues)
+- **Performance:** Local database query, no external API costs or latency
+- **Privacy:** No data sent to third-party services
+
+#### Implementation
+
+```
+Input Field Configuration:
+- TextField for city input
+- Enable auto-complete/suggestions dropdown
+
+Suggestion Logic:
+
+User types in city field:
+→ Trigger: onChange event (with debounce - 300ms delay)
+
+Query:
+SELECT DISTINCT city 
+FROM Events 
+WHERE city LIKE 'user_input%'
+ORDER BY 
+  (SELECT COUNT(*) FROM Events e WHERE e.city = Events.city) DESC
+LIMIT 5
+
+Result Processing:
+→ Returns: List of cities matching input, ordered by event count
+→ Display in dropdown below input field:
+  * Berlin (12 events)
+  * Bern (3 events)
+
+User Interaction:
+→ User types "Ber"
+→ Sees suggestions appear
+→ Clicks suggestion OR continues typing
+→ Selected city populates field
+```
+
+**Enhancement:** Show event count next to each city to help users make informed choices about location.
+
+**Edge Case Handling:**
+- User types city not in database → Allow custom entry (for creating first event in new city)
+- No suggestions found → Show message: "No events in this city yet. Be the first!"
+
+---
+
+### 2. Real-Time Availability Check During Event Registration
+
+**Purpose:** Prevent registration failures by checking seat availability as user completes the registration form.
+
+**Timing:** Check availability at multiple points, not just final submission
+
+#### Implementation Strategy
+
+```
+Availability Check Points:
+
+Point 1: Form Load
+When registration form opens:
+→ Query current Event.currentAttendees and Event.maxAttendees
+→ Display availability status:
+  * "23 seats remaining"
+  * "Last 5 seats!"
+  * "Sold out - Join waitlist"
+→ If sold out: Disable registration, offer waitlist
+
+Point 2: During Form Completion (Periodic)
+Every 15-30 seconds while form is open:
+→ Background API call to check current availability
+→ Update availability display if changed
+→ If becomes sold out while user filling form:
+  * Show alert: "This event just sold out"
+  * Disable submit button
+  * Offer alternative actions
+
+Point 3: Form Submission (Final Check)
+User clicks "Complete Registration":
+→ Final real-time availability check before creating Ticket
+→ IF still available:
+  * Proceed with registration
+  * Atomically increment currentAttendees
+→ IF sold out:
+  * Block registration
+  * Show: "Sorry, the last seat was just taken"
+  * Offer waitlist or similar events
+```
+
+**Technical Consideration:** Use optimistic locking or database transactions to prevent race conditions where multiple users register for the last seat simultaneously.
+
+**UX Benefits:**
+- **Transparency:** Users always see current availability
+- **No Surprises:** Failed registration at end is prevented by early warnings
+- **Alternatives:** System proactively offers solutions if event becomes unavailable
+
+---
+
+### 3. Dynamic Field Creation (Multiple Phone Numbers)
+
+**Purpose:** Allow users to add multiple contact phone numbers without predetermined limits.
+
+**Use Case:** User might want to provide: mobile, work, emergency contact numbers
+
+#### Implementation
+
+```
+Initial State:
+- Show one phone number TextField
+- "Add Another Phone Number" button below
+
+Data Structure (Page State):
+- phoneNumbers: List<String>
+- Initial value: [""] (one empty string)
+
+Add Phone Number Flow:
+
+User clicks "Add Another Phone Number":
+→ Action: Add empty string to phoneNumbers list
+→ UI updates: New TextField appears
+→ Each TextField bound to phoneNumbers[index]
+→ "Remove" button appears next to each field (except if only 1)
+
+Remove Phone Number Flow:
+
+User clicks "Remove" icon next to a field:
+→ Action: Remove item at that index from phoneNumbers list
+→ UI updates: TextField disappears
+→ Remaining fields re-index automatically
+
+Validation:
+FOR EACH phone number in phoneNumbers:
+  IF not empty:
+    → Validate format (e.g., 10+ digits)
+    → Show error if invalid
+  IF empty:
+    → Skip validation (optional field)
+
+Data Submission:
+→ Filter out empty entries before saving
+→ Save as List<String> in User data or Event organizer contact info
+```
+
+**UX Considerations:**
+- **No Arbitrary Limit:** Let users add as many as needed (reasonable max: 5-10)
+- **Visual Hierarchy:** Primary phone number labeled differently from additional numbers
+- **Placeholder Text:** Guide format: "+1 (555) 123-4567"
+- **Smart Defaults:** If user has phone numbers from profile, pre-populate first field
+
+---
+
+### 4. Auto-Save Form Every 30 Seconds
+
+**Purpose:** Prevent data loss from accidental navigation, browser crashes, or session timeouts.
+
+**Save Frequency:** Every 30 seconds + on navigation events
+
+#### Implementation Strategy
+
+**Timer-Based Auto-Save:**
+
+```
+Page Load:
+→ Start timer (30-second interval)
+
+Timer Trigger (Every 30 Seconds):
+→ Collect all form field values:
+  * Name, email, description, city, date, price, etc.
+→ Create formDraft object with timestamp
+→ Save to Page State: formDraft = {
+    fields: {field1: value1, field2: value2, ...},
+    lastSaved: currentTimestamp
+  }
+→ Show subtle feedback: "Draft saved" (toast/indicator)
+
+Continuous Loop:
+→ Timer repeats every 30 seconds while user on page
+→ Each save overwrites previous draft with current state
+```
+
+**Navigation-Triggered Save:**
+
+```
+User navigates away from form page:
+→ Intercept navigation event (onPageWillUnload)
+→ Trigger immediate save of current form state
+→ Rationale: User may have entered data < 30 seconds ago
+
+Benefits:
+- Prevents data loss if user accidentally leaves page
+- Captures recent changes not yet covered by timer
+- No "Are you sure?" dialog needed - data is safe
+```
+
+**Save Location:** Page State
+
+**Rationale:**
+- **Page-Specific:** Draft is relevant only to this particular form instance
+- **Temporary Nature:** Form draft is meant for immediate session recovery, not long-term storage
+- **Clean State:** When user successfully submits form, draft is cleared automatically
+- **No Clutter:** Doesn't pollute App State with temporary form data
+
+**Alternative Enhancement:** For critical forms (event creation), could save to App State or local database for cross-session recovery: "You have an unsaved draft from yesterday. Would you like to restore it?"
+
+#### Draft Recovery
+
+```
+Page Load:
+→ Check if formDraft exists in Page State
+→ IF formDraft found AND not expired (< 1 hour old):
+  * Show dialog: "Restore unsaved changes?"
+  * User clicks "Restore":
+    → Populate all form fields with draft values
+    → Show indicator: "Draft restored from [time]"
+  * User clicks "Start Fresh":
+    → Clear formDraft
+    → Show empty form
+
+→ IF no draft OR expired:
+  * Show empty form
+  * Start fresh auto-save cycle
+```
+
+**User Control:**
+- Always ask before restoring draft (don't assume user wants it)
+- Provide clear timestamp of when draft was saved
+- Allow user to discard draft if they want fresh start
+
+---
+
+## Advanced Interactivity Patterns Demonstrated
+
+### 1. Predictive Assistance
+- **Auto-complete:** System anticipates user needs based on existing data
+- **Real-time checks:** Proactive validation prevents future errors
+- **Smart defaults:** Pre-populate fields when possible
+
+### 2. Progressive Enhancement
+- **Dynamic fields:** UI adapts to user needs (add phone numbers as needed)
+- **Contextual feedback:** Show relevant information at decision points
+- **Flexible interactions:** Support both power users and beginners
+
+### 3. Data Preservation
+- **Auto-save:** Automatic protection against data loss
+- **Draft recovery:** Restore interrupted work
+- **Multiple save triggers:** Timer + navigation ensures coverage
+
+### 4. User Control with Intelligence
+- **Hybrid filtering:** Balance between automatic and explicit control
+- **Confirmation dialogs:** Ask before destructive or surprising actions
+- **Clear feedback:** Always show what system is doing and why
+
+### 5. Performance Optimization
+- **Debouncing:** Wait for user to finish typing before triggering searches
+- **Throttling:** Limit frequency of availability checks to reduce server load
+- **Local-first:** Use cached/local data for suggestions before hitting API
+- **Batching:** Apply all filters at once rather than per-filter queries
+
+---
+
+## Implementation Priorities
+
+**Tier 1 (Must-Have):**
+1. Auto-save functionality (prevents data loss)
+2. Real-time availability checking (prevents registration failures)
+3. Basic filtering with Apply button (core feature)
+
+**Tier 2 (High Value):**
+4. Auto-complete for city (significantly improves data quality and UX)
+5. Dynamic phone number fields (flexible, professional appearance)
+
+**Tier 3 (Nice to Have):**
+6. Advanced filter features (histograms, saved presets)
+7. Draft recovery across sessions
+8. Predictive suggestions based on user behavior
+
+---
+
+## User Experience Impact
+
+**Reduced Friction:**
+- Auto-complete eliminates typing effort
+- Auto-save eliminates anxiety about losing work
+- Real-time checks prevent wasted effort on unavailable events
+
+**Increased Confidence:**
+- Clear feedback at every interaction point
+- Transparent availability information
+- Explicit control over filter application
+
+**Professional Polish:**
+- Intelligent behaviors feel modern and considerate
+- Responsive feedback shows system is working
+- Flexible inputs accommodate diverse user needs
+
+**Error Prevention:**
+- Early validation catches problems before submission
+- Standardized data (cities) reduces downstream issues
+- Atomic operations prevent race conditions
+
+---
