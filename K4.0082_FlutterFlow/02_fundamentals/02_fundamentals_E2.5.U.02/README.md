@@ -1,4 +1,4 @@
-# Exercise 2.2.Ü.02 - Event App: Widgets, Layout & Design System
+# Exercise 2.5.Ü.02 - Event App: Widgets, Layout & Design System
 
 ---
 
