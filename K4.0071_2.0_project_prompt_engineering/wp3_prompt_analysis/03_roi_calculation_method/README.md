@@ -483,28 +483,31 @@ Portfolio Status: ✅ HEALTHY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  PROMPT-BY-PROMPT PERFORMANCE ANALYSIS - Q4 2025
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
-[Table Format]
+**Prompt Performance Table:**
 
-Prompt | Usage | Impact | Benefit | Effectiveness | Satisfaction | Status
--------|-------|--------|---------|---------------|-------------|--------
-DEC-DA-REV-QUAL | 47 | €2,400 | €112.8K | 94.7 | 4.3 | ⭐ Star
-EXP-DA-DASH-EXEC | 847 | €4.80 | €4.1K | 93.8 | 4.7 | ✅ Strong
-RET-CS-BILL | 1,372 | €0.80 | €1.1K | 96.2 | 4.6 | ✅ Strong
-DIA-CS-TECH-URGENT | 209 | €2.24 | €468 | 87.3 | 4.2 | ↗️ Growing
-GEN-CC-PROD-RETAIL | 190 | €2.40 | €456 | 89.1 | 4.4 | ✅ Stable
-DIA-SD-ERR-JUNIOR | 305 | €1.20 | €366 | 88.9 | 4.5 | ✅ Stable
-GEN-CC-CAMP | 338 | €0.96 | €325 | 88.5 | 4.1 | 📈 Seasonal peak
-DIA-CS-TECH | 325 | €2.24 | €728 | 87.3 | 4.2 | ⚠️ Declining (deprecate)
-GEN-SD-DOC | 165 | €1.44 | €238 | 86.7 | 3.8 | ⚠️ Low satisfaction
+| Prompt | Usage | Impact | Benefit | Effectiveness | Satisfaction | Status |
+|--------|-------|--------|---------|---------------|--------------|--------|
+| DEC-DA-REV-QUAL | 47 | €2,400 | €112.8K | 94.7 | 4.3 | ⭐ Star |
+| EXP-DA-DASH-EXEC | 847 | €4.80 | €4.1K | 93.8 | 4.7 | ✅ Strong |
+| RET-CS-BILL | 1,372 | €0.80 | €1.1K | 96.2 | 4.6 | ✅ Strong |
+| DIA-CS-TECH-URGENT | 209 | €2.24 | €468 | 87.3 | 4.2 | ↗️ Growing |
+| GEN-CC-PROD-RETAIL | 190 | €2.40 | €456 | 89.1 | 4.4 | ✅ Stable |
+| DIA-SD-ERR-JUNIOR | 305 | €1.20 | €366 | 88.9 | 4.5 | ✅ Stable |
+| GEN-CC-CAMP | 338 | €0.96 | €325 | 88.5 | 4.1 | 📈 Seasonal peak |
+| DIA-CS-TECH | 325 | €2.24 | €728 | 87.3 | 4.2 | ⚠️ Declining (deprecate) |
+| GEN-SD-DOC | 165 | €1.44 | €238 | 86.7 | 3.8 | ⚠️ Low satisfaction |
 
+```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  DETAILED INSIGHTS & ACTION ITEMS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
-[Per-Prompt Analysis]
+**Per-Prompt Analysis:**
 
-DEC-DA-REV-DRIVERS-QUAL
+**DEC-DA-REV-DRIVERS-QUAL:**
 - Trend: Q1 34 → Q2 24 → Q3 26 → Q4 47 (+81% QoQ)
 - Analysis: Seasonal peak in Q4 (year-end budget decisions)
 - Opportunity: Low usage despite massive value (€2,400/use)
@@ -512,7 +515,7 @@ DEC-DA-REV-DRIVERS-QUAL
 - Target: Increase monthly usage from 47 → 150 by Q2 2026
 - Projected Impact: +€248K annual benefit
 
-EXP-DA-DASH-METRICS-EXEC
+**EXP-DA-DASH-METRICS-EXEC:**
 - Trend: Steady growth (+4% QoQ average)
 - Analysis: Highest satisfaction (4.7/5) in portfolio
 - Strength: Executive adoption strong, UX validated
@@ -520,13 +523,15 @@ EXP-DA-DASH-METRICS-EXEC
 - Target: Cover 100% of executive dashboards by Q3 2026
 - Projected Impact: +€12K annual benefit
 
-[... continued for all 8 prompts ...]
+*(Analysis continues for remaining 6 prompts)*
 
+```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  DEPRECATION RECOMMENDATIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
-DIA-CS-TECH (Base Version)
+**DIA-CS-TECH (Base Version):**
 - Rationale: Replaced by URGENT variant (superior performance)
 - Migration Plan: 90-day deprecation notice (Q1 2026)
 - User Impact: 325 monthly users → Migrate to URGENT
@@ -535,6 +540,7 @@ DIA-CS-TECH (Base Version)
 
 Status: ✅ Approved for deprecation
 
+```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  2026 ROADMAP PRIORITIES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
