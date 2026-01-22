@@ -729,24 +729,28 @@ Task Completion Rate: 88.7% (↑ 3.2% QoQ)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  PROMPT PERFORMANCE DETAIL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
-[Interactive table with sorting/filtering]
+**Interactive Table (with sorting/filtering):**
 
-Prompt ID | Usage | Satisfaction | Effectiveness | Value | Trend
-----------|-------|--------------|--------------|-------|-------
-RET-CS-BILL | 1,247 | 4.6 | 96.2 | 1.15 | ↑ 5%
-DEC-DA-REV-QUAL | 47 | 4.3 | 94.7 | 100.44 | ↑ 12%
-EXP-DA-DASH-EXEC | 847 | 4.7 | 93.8 | 3.20 | → Stable
-...
+| Prompt ID | Usage | Satisfaction | Effectiveness | Value | Trend |
+|-----------|-------|--------------|---------------|-------|-------|
+| RET-CS-BILL | 1,247 | 4.6 | 96.2 | 1.15 | ↑ 5% |
+| DEC-DA-REV-QUAL | 47 | 4.3 | 94.7 | 100.44 | ↑ 12% |
+| EXP-DA-DASH-EXEC | 847 | 4.7 | 93.8 | 3.20 | → Stable |
+| ... | ... | ... | ... | ... | ... |
 
-[Drill-down capability]
+**Drill-down capability:**
+```
 Click prompt → See:
 - Weekly usage trend (last 12 weeks)
 - Satisfaction by user segment (customer vs. agent)
 - Task completion funnel (start → completion → abandonment)
 - Top failure modes (from feedback text)
+```
 
-[Action Items]
+**Action Items:**
+```
 ⚠️ GEN-SD-DOC: Satisfaction 3.8 → Investigate root cause
 💡 DEC-DA-REV-QUAL: Low usage → Awareness campaign
 ✅ RET-CS-BILL: High performance → Document best practices
