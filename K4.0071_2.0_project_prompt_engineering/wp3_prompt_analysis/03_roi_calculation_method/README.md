@@ -331,30 +331,42 @@ pie title "Annual Benefit by Top 3 Prompts (2025)"
 
 ```mermaid
 quadrantChart
-    title Prompt Portfolio Matrix (2025)
-    x-axis Low Effectiveness --> High Effectiveness
-    y-axis Low Value --> High Value
-    quadrant-1 Stars (Invest)
-    quadrant-2 Question Marks (Improve UX)
-    quadrant-3 Dogs (Deprecate)
-    quadrant-4 Cash Cows (Maintain)
-    DEC-DA-REV-QUAL: [0.95, 0.98]
-    EXP-DA-DASH: [0.94, 0.32]
-    RET-CS-BILL: [0.96, 0.11]
-    DIA-CS-TECH-URGENT: [0.87, 0.06]
-    GEN-CC-PROD-RETAIL: [0.89, 0.04]
-    DIA-SD-ERR-JUNIOR: [0.90, 0.03]
-    GEN-CC-CAMP: [0.88, 0.02]
-    GEN-SD-DOC: [0.87, 0.01]
+    title "Prompt Portfolio Matrix (2025)"
+    x-axis "Low Effectiveness" --> "High Effectiveness"
+    y-axis "Low Value" --> "High Value"
+    quadrant-1 "Stars (Invest)"
+    quadrant-2 "Question Marks (Improve UX)"
+    quadrant-3 "Dogs (Deprecate)"
+    quadrant-4 "Cash Cows (Maintain)"
+    "REV-Q": [0.95, 0.98]
+    "DASH": [0.94, 0.32]
+    "BILL": [0.96, 0.28]
+    "TRIAGE": [0.87, 0.18]
+    "RETAIL": [0.89, 0.12]
+    "JUNIOR": [0.90, 0.08]
+    "CAMP": [0.88, 0.05]
+    "DOC": [0.87, 0.03]
 ```
+
+**Legend:**
+| Code | Full Prompt Name | Effectiveness | Value (%) | Quadrant |
+|------|-----------------|---------------|-----------|----------|
+| REV-Q | DEC-DA-REV-QUAL | 95% | 78% | ⭐ Star |
+| DASH | EXP-DA-DASH-EXEC | 94% | 4% | 💰 Cash Cow |
+| BILL | RET-CS-BILL | 96% | 1% | 💰 Cash Cow |
+| TRIAGE | DIA-CS-TECH-URGENT | 87% | 0.5% | 💰 Cash Cow |
+| RETAIL | GEN-CC-PROD-RETAIL | 89% | 0.4% | 💰 Cash Cow |
+| JUNIOR | DIA-SD-ERR-JUNIOR | 90% | 0.3% | 💰 Cash Cow |
+| CAMP | GEN-CC-CAMP | 88% | 0.2% | 💰 Cash Cow |
+| DOC | GEN-SD-DOC | 87% | 0.1% | 💰 Cash Cow |
 
 **Quadrant Analysis:**
 
 **Stars (High Effectiveness + High Value):**
-- DEC-DA-REV-QUAL: Investment priority #1
+- REV-Q (DEC-DA-REV-QUAL): Investment priority #1
 
-**Cash Cows (High Effectiveness + Moderate Value):**
-- EXP-DA-DASH, RET-CS-BILL: Maintain quality, harvest benefits
+**Cash Cows (High Effectiveness + Moderate/Low Value):**
+- DASH, BILL, TRIAGE, RETAIL, JUNIOR, CAMP, DOC: Maintain quality, harvest benefits
 
 **Question Marks (Lower Effectiveness + Moderate Value):**
 - None currently (all prompts >85% effective)
@@ -363,9 +375,9 @@ quadrantChart
 - None (all prompts production-ready)
 
 **Strategic Actions:**
-1. **Protect Stars:** DEC-DA-REV-QUAL gets dedicated resources
+1. **Protect Stars:** REV-Q gets dedicated resources
 2. **Optimize Cash Cows:** Polish UX, don't over-invest
-3. **Monitor Long Tail:** GEN-SD-DOC at risk (effectiveness 86.7, value 0.01)
+3. **Monitor Long Tail:** DOC at risk (effectiveness 87%, value 0.1%)
 
 ---
 
