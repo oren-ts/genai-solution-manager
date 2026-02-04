@@ -1,22 +1,15 @@
-# =============================================================================
 # Task C: Rule-Based vs AI-Based Chatbot
-# =============================================================================
-# Purpose: Demonstrate the differences between rule-based and AI-based chatbots
-#          using the example question: "What time is it?"
-# =============================================================================
+# Purpose: Demonstrate the differences between rule-based and AI-based chatbots using the example question: "What time is it?"
 
-# =============================================================================
-# APPROACH 1: RULE-BASED CHATBOT
-# =============================================================================
-"""
+## APPROACH 1: RULE-BASED CHATBOT
+
 Characteristics:
 - Uses predefined patterns/rules
 - Direct string matching
 - No learning involved
 - Deterministic behavior
-"""
 
-# Define all possible time-related patterns
+### Define all possible time-related patterns
 rules = [
     "time", 
     "what time is it", 
@@ -25,17 +18,17 @@ rules = [
     "tell me the time"
 ]
 
-# Process user input
+### Process user input
 user_input = "What time is it?"
 input_lower = user_input.lower()
 
-# Check if input matches any rule
+### Check if input matches any rule
 for rule in rules:
     if rule in input_lower:
         time = get_current_time()
         return time
 
-# If no rule matched
+### If no rule matched
 return "I don't understand"
 
 """
@@ -52,9 +45,7 @@ Weaknesses:
 - Maintenance-heavy as complexity grows
 """
 
-# =============================================================================
-# APPROACH 2: AI-BASED CHATBOT
-# =============================================================================
+## APPROACH 2: AI-BASED CHATBOT
 """
 Characteristics:
 - Learns patterns from training data
@@ -63,11 +54,9 @@ Characteristics:
 - Probabilistic behavior
 """
 
-# -----------------------------------------------------------------------------
-# PHASE 1: TRAINING (Done Once, Offline)
-# -----------------------------------------------------------------------------
+### PHASE 1: TRAINING (Done Once, Offline)
 
-# 1. Prepare training data with labeled intents
+### 1. Prepare training data with labeled intents
 training_data = [
     ("what time is it", "get_time"),
     ("tell me the time", "get_time"),
@@ -78,30 +67,28 @@ training_data = [
     # ... hundreds/thousands more examples
 ]
 
-# 2. Extract features from text (convert text to numbers)
+### 2. Extract features from text (convert text to numbers)
 vectorizer = TfidfVectorizer()
 X_train = vectorizer.fit_transform([text for text, intent in training_data])
 y_train = [intent for text, intent in training_data]
 
-# 3. Train classifier
+### 3. Train classifier
 model = MultinomialNB()
 model.fit(X_train, y_train)
 
-# -----------------------------------------------------------------------------
-# PHASE 2: INFERENCE (Every User Query)
-# -----------------------------------------------------------------------------
+### PHASE 2: INFERENCE (Every User Query)
 
-# 1. Receive user input
+### 1. Receive user input
 user_input = "hey what time is it now?"
 
-# 2. Preprocess: convert to same format as training data
+### 2. Preprocess: convert to same format as training data
 input_vector = vectorizer.transform([user_input])
 
-# 3. Predict intent using trained model
+### 3. Predict intent using trained model
 predicted_intent = model.predict(input_vector)
 confidence = model.predict_proba(input_vector)
 
-# 4. Execute appropriate action based on predicted intent
+### 4. Execute appropriate action based on predicted intent
 if predicted_intent == "get_time":
     time = get_current_time()
     return time
@@ -129,9 +116,7 @@ Weaknesses:
 - Can make unexpected mistakes
 """
 
-# =============================================================================
-# COMPARISON SUMMARY
-# =============================================================================
+### COMPARISON SUMMARY
 """
 KEY DIFFERENCES:
 
