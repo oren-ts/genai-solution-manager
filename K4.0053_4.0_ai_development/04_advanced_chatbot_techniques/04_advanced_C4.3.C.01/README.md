@@ -402,3 +402,274 @@ Bot: "Welcome back, Sarah! I see you enjoyed the sea view room last time.
 
 ---
 
+## Part (c) - Personalized Recommendation Scenario
+
+### Overview
+
+This section demonstrates how the chatbot leverages collected data from previous interactions to provide intelligent, personalized recommendations. We'll walk through a concrete scenario showing data collection, storage, retrieval, and application.
+
+### Guest Profile: Sarah Chen
+
+**Background Information:**
+
+Sarah Chen is a returning guest who has stayed at the hotel multiple times. Over her previous visits, the chatbot has collected and learned the following information:
+
+| Data Category | Collected Information | Collection Method |
+|---------------|----------------------|-------------------|
+| **Booking History** | • 3 previous stays<br/>• All bookings were deluxe sea view rooms<br/>• Always stayed 3 nights<br/>• Books 2 weeks in advance | Transactional data from completed bookings |
+| **Explicit Preferences** | • Requested late checkout (all visits)<br/>• Specified need for hypoallergenic pillows<br/>• Prefers quiet floors (away from elevators) | Directly stated during booking conversations |
+| **Implicit Preferences** | • High satisfaction scores (4-5 stars)<br/>• Never inquired about budget options<br/>• Books during shoulder season (spring/fall) | Behavioral analysis and pattern recognition |
+| **Special Requirements** | • Allergic to down/feather pillows<br/>• Travels with laptop (needs desk space)<br/>• Vegetarian breakfast preference | Mentioned during stays and stored in profile |
+
+### Personalization Scenario: Sarah's Return Visit
+
+#### Conversation Example
+```
+[Sarah returns to the hotel website and opens the chatbot]
+
+Turn 1:
+User: "Hi, I'd like to book a room for next month"
+
+Bot: "Welcome back, Sarah! It's great to see you again. 
+
+Based on your previous stays, I'd recommend our Deluxe Sea View Room on 
+the 8th floor – it's quiet, has a beautiful ocean view you've enjoyed 
+before, and of course, we'll ensure it's equipped with hypoallergenic 
+pillows.
+
+The room includes a spacious work desk and is available with your 
+preferred late checkout option.
+
+Would you like to book this room, or would you prefer to explore other 
+options?"
+
+Turn 2:
+User: "That sounds perfect! Same dates as usual?"
+
+Bot: "I see you typically stay for 3 nights. Looking at next month, how 
+about arriving on October 15th and checking out on October 18th? 
+
+That's about 2 weeks from now, which matches your usual booking pattern."
+
+Turn 3:
+User: "Yes, that works great!"
+
+Bot: "Excellent! I've reserved the Deluxe Sea View Room (Room 803) for 
+you from October 15-18, 2024.
+
+I've also added a note for our staff to:
+✓ Provide hypoallergenic pillows
+✓ Arrange late checkout (2:00 PM instead of 11:00 AM)
+✓ Ensure vegetarian options are available at breakfast
+
+The total for your 3-night stay is $450. Would you like to use the 
+credit card ending in 4532 that you used last time, or provide a 
+different payment method?"
+
+Turn 4:
+User: "Use the same card, thanks!"
+
+Bot: "Perfect! Your booking is confirmed. 
+
+As a Gold loyalty member, I've also added a complimentary room upgrade 
+to our Premium Sea View Suite at no additional charge – it has even 
+better views and a larger workspace.
+
+We look forward to welcoming you back on October 15th, Sarah! 
+
+Is there anything else you'd like me to arrange for your stay?"
+```
+
+### Personalization Mechanics: Behind the Scenes
+
+The following diagram illustrates how data flows through the system to enable this personalized interaction:
+```mermaid
+flowchart TB
+    subgraph DataCollection["📊 Data Collection Phase<br/>(Previous Visits)"]
+        Booking["Booking Transactions<br/>━━━━━━━━━━━<br/>• Room types booked<br/>• Stay duration<br/>• Booking lead time"]
+        
+        Explicit["Explicit Statements<br/>━━━━━━━━━━━<br/>• Late checkout requests<br/>• Allergy information<br/>• Dietary preferences"]
+        
+        Implicit["Behavioral Patterns<br/>━━━━━━━━━━━<br/>• Satisfaction ratings<br/>• Price tier preferences<br/>• Seasonal patterns"]
+    end
+    
+    subgraph Storage["💾 Data Storage"]
+        Booking --> Profile[(User Profile Database)]
+        Explicit --> Profile
+        Implicit --> Profile
+        
+        Profile --> |Structured Data| ProfileData["user_id: sarah_chen_456<br/>preferences: {<br/>  room: 'sea_view',<br/>  pillows: 'hypoallergenic',<br/>  checkout: 'late',<br/>  diet: 'vegetarian'<br/>}<br/>patterns: {<br/>  duration: 3 nights,<br/>  lead_time: 14 days<br/>}"]
+    end
+    
+    subgraph Retrieval["🔍 Data Retrieval Phase<br/>(Current Visit)"]
+        NewSession["New Session Starts<br/>━━━━━━━━━━━<br/>User: 'I'd like to book a room'"]
+        
+        NewSession --> Identify["Identify User<br/>━━━━━━━━━━━<br/>• Logged in: sarah_chen_456<br/>• Or: Email recognition<br/>• Or: Loyalty number"]
+        
+        Identify --> Load["Load Profile<br/>━━━━━━━━━━━<br/>• Retrieve preferences<br/>• Access booking history<br/>• Load learned patterns"]
+        
+        Profile -.->|Query| Load
+    end
+    
+    subgraph Application["🎯 Personalization Application"]
+        Load --> Recommend["Generate Recommendation<br/>━━━━━━━━━━━<br/>• Room: Deluxe Sea View (preferred)<br/>• Floor: 8th (quiet location)<br/>• Special: Hypoallergenic pillows<br/>• Extra: Late checkout offer"]
+        
+        Recommend --> Predict["Smart Predictions<br/>━━━━━━━━━━━<br/>• Suggest 3-night stay<br/>• Propose dates 14 days ahead<br/>• Offer saved payment method"]
+        
+        Predict --> Response["Personalized Response<br/>━━━━━━━━━━━<br/>'Welcome back, Sarah!'<br/>+ Tailored recommendation<br/>+ Remembered preferences<br/>+ Loyalty benefits"]
+    end
+    
+    Response --> User([Sarah receives<br/>personalized experience])
+    
+    style DataCollection fill:#e3f2fd
+    style Storage fill:#f3e5f5
+    style Retrieval fill:#e8f5e9
+    style Application fill:#fff3e0
+    style Profile fill:#c5cae9
+    style User fill:#ffccbc
+```
+
+### Information Collection, Storage, and Usage
+
+#### 1. Data Collection Methods
+
+| Information Type | How It's Collected | When It's Collected |
+|------------------|-------------------|-------------------|
+| **Room Preferences** | • User explicitly selects room type<br/>• Pattern recognition from multiple bookings | During booking process and post-stay analysis |
+| **Special Requirements** | • User states during conversation<br/>• Extracted via NLP from natural language | Any time during conversation or in special requests field |
+| **Behavioral Patterns** | • Duration: Calculated from booking history<br/>• Lead time: Time between booking and check-in<br/>• Price sensitivity: Analysis of room tier choices | Automated analysis after each completed stay |
+| **Satisfaction Data** | • Post-stay survey responses<br/>• Review ratings<br/>• Repeat booking behavior | After checkout via email survey |
+| **Dietary Preferences** | • Breakfast order history<br/>• Explicit statements during booking<br/>• Restaurant reservation patterns | During stay through various touchpoints |
+
+#### 2. Storage Strategy
+
+**Profile Database Schema:**
+```
+Table: user_profiles
+├─ user_id (Primary Key)
+├─ personal_info (JSON)
+│  ├─ name
+│  ├─ email
+│  ├─ phone
+│  └─ loyalty_tier
+├─ preferences (JSON)
+│  ├─ room_preferences
+│  │  ├─ type: "sea_view"
+│  │  ├─ floor: "high_floors"
+│  │  └─ features: ["quiet", "workspace"]
+│  ├─ amenities
+│  │  ├─ pillows: "hypoallergenic"
+│  │  ├─ checkout: "late"
+│  │  └─ breakfast: "vegetarian"
+│  └─ communication
+│     └─ preferred_channel: "email"
+├─ booking_history (Array)
+│  └─ [
+│     { date, room_type, duration, price, satisfaction },
+│     ...
+│  ]
+└─ learned_patterns (JSON)
+   ├─ typical_duration: 3
+   ├─ booking_lead_time: 14
+   ├─ preferred_season: ["spring", "fall"]
+   └─ price_sensitivity: "moderate"
+
+Table: special_requirements
+├─ user_id (Foreign Key)
+├─ requirement_type (e.g., "allergy", "accessibility", "dietary")
+├─ description
+├─ severity (critical, important, nice-to-have)
+└─ date_added
+```
+
+**Privacy and Consent:**
+- All data storage complies with GDPR/privacy regulations
+- Users can view, edit, or delete their profile at any time
+- Sensitive data (allergies, medical needs) flagged as "critical"
+- Explicit consent obtained for data retention beyond legal minimum
+
+#### 3. Recommendation Generation Process
+
+**Step-by-step logic:**
+```pseudocode
+FUNCTION generate_personalized_recommendation(user_id, booking_request):
+    // 1. Load user profile
+    profile = get_user_profile(user_id)
+    
+    // 2. Analyze booking history for patterns
+    preferred_room = most_frequent(profile.booking_history.room_type)
+    typical_duration = median(profile.booking_history.duration)
+    
+    // 3. Check availability of preferred room
+    available_rooms = check_availability(
+        room_type = preferred_room,
+        check_in = booking_request.date,
+        duration = typical_duration
+    )
+    
+    // 4. Apply special requirements as filters
+    filtered_rooms = apply_filters(available_rooms, profile.special_requirements)
+    
+    // 5. Rank by preference match
+    FOR EACH room in filtered_rooms:
+        score = 0
+        IF room.floor in profile.preferences.floor_preference:
+            score += 10
+        IF room.has_feature("quiet"):
+            score += 5
+        IF room.view == profile.preferences.view:
+            score += 15
+        room.recommendation_score = score
+    
+    // 6. Select best match
+    best_room = max(filtered_rooms, key=recommendation_score)
+    
+    // 7. Generate personalized message
+    message = f"Welcome back, {profile.name}! "
+    message += f"Based on your previous stays, I'd recommend our {best_room.type} "
+    message += f"on the {best_room.floor} floor."
+    
+    // 8. Add remembered special requirements
+    IF profile.special_requirements.exists():
+        message += " We'll ensure it's equipped with "
+        message += join(profile.special_requirements)
+    
+    // 9. Offer value-added services based on patterns
+    IF profile.preferences.checkout == "late":
+        message += " with your preferred late checkout option."
+    
+    RETURN {
+        recommended_room: best_room,
+        personalized_message: message,
+        confidence_score: best_room.recommendation_score
+    }
+```
+
+### Key Personalization Elements in This Scenario
+
+| Personalization Element | Source Data | Impact on Experience |
+|------------------------|-------------|---------------------|
+| **Greeting by name** | User profile: personal_info.name | Creates immediate recognition and connection |
+| **Room recommendation** | Booking history: 3x deluxe sea view rooms | Reduces decision fatigue, shows understanding |
+| **Floor selection** | Implicit preference: quiet floors pattern | Anticipates unstated need for peaceful stay |
+| **Hypoallergenic pillows** | Special requirements: allergy information | Critical for safety and comfort |
+| **Late checkout mention** | Explicit preference: requested 3x | Proactively offers valued service |
+| **Duration suggestion** | Behavioral pattern: always 3 nights | Speeds up booking process |
+| **Timing prediction** | Behavioral pattern: books 14 days ahead | Helps with planning and availability |
+| **Payment method** | Transaction history: saved card | Streamlines checkout process |
+| **Vegetarian breakfast** | Dietary preference: stated previously | Shows attention to detail |
+| **Loyalty upgrade** | Loyalty tier: Gold member | Rewards repeat business |
+
+### Benefits of This Personalization Approach
+
+**For the Guest:**
+- ⏱️ **Faster booking:** Reduced from 10+ back-and-forth messages to 4 turns
+- 🎯 **Relevant recommendations:** No need to browse through all room types
+- 🛡️ **Safety assurance:** Critical needs (allergies) automatically remembered
+- ✨ **VIP treatment:** Feels recognized and valued as a returning guest
+
+**For the Hotel:**
+- 💰 **Higher conversion:** Personalized recommendations increase booking rate
+- 📈 **Upsell opportunities:** Can offer upgrades based on demonstrated preferences
+- 🤝 **Guest loyalty:** Recognition encourages repeat bookings
+- ⚡ **Operational efficiency:** Fewer clarification questions, faster transactions
