@@ -2,189 +2,524 @@
 
 ## Overview
 
-This section describes the basic architecture of a simple AI-based chatbot for a pizza ordering scenario. The chatbot consists of three main components: **intent recognition**, **entity extraction**, and **context management**. Together, these components enable the chatbot to understand user input, maintain a coherent conversation over multiple turns, and generate appropriate responses.
+This document describes the architecture of a simple AI-based chatbot designed for pizza ordering. The chatbot consists of three core components working together to enable natural, multi-turn conversations: **intent recognition**, **entity extraction**, and **context management**. These components process user input, maintain conversation state, and generate appropriate responses.
+
+**Key Design Principles:**
+- Beginner-friendly implementation using keyword-based rules
+- Context-aware intent resolution for handling ambiguous inputs
+- Finite state machine for conversation flow management
+- Modular architecture allowing independent component testing
 
 ---
 
 ## 1. Intent Recognition
 
-**Purpose:**
-The intent recognition component identifies the **goal or intention** of the user’s message.
+### Purpose
+The intent recognition component identifies the **user's goal or intention** from their message. This determines what action the chatbot should take.
 
-**How it works:**
-In this chatbot, intent recognition is implemented using a simple keyword-based approach. The user’s input text is analyzed for specific keywords or phrases that are associated with predefined intents (for example: `order_pizza`, `specify_size`, `specify_toppings`, `cancel_order`, `greeting`).
+### How It Works
+Intent recognition uses a **keyword-based approach with priority ordering**. User input is normalized (lowercased, punctuation removed) and scanned for keywords associated with predefined intents.
+
+**Key Features:**
+- **Priority-based matching:** Intents are evaluated in a fixed priority order to resolve conflicts when multiple intents match
+- **Context-aware resolution:** Low-priority intents (specify_size, specify_toppings) are validated against conversation context
+- **Dual-role keywords:** Some keywords serve both as intent triggers and entity values (e.g., "large" triggers specify_size and represents a size entity)
+
+### Supported Intents
+
+The chatbot recognizes six intents with the following priority order:
+
+| Priority | Intent           | Purpose                              | Example Keywords          |
+|----------|------------------|--------------------------------------|---------------------------|
+| 1        | cancel_order     | Cancel current order (critical)      | cancel, stop, nevermind   |
+| 2        | greeting         | Start/acknowledge conversation       | hi, hello, hey            |
+| 3        | order_pizza      | Initiate pizza order                 | pizza, order, want, get   |
+| 4        | specify_size     | Provide pizza size (context-dependent)| small, medium, large      |
+| 5        | specify_toppings | Provide toppings (context-dependent) | pepperoni, mushrooms, cheese |
+| 6        | unknown          | Fallback for unrecognized input      | (no keywords match)       |
+
+### Intent Priority Rationale
+
+**Tier 1: Critical Intents** (cancel_order)
+- Must work at any time in the conversation
+- User safety and control priority
+- Overrides all other intents
+
+**Tier 2: Meta Intents** (greeting)
+- Conversation management
+- Can occur at any point without disrupting order flow
+- Acknowledged but doesn't change conversation state
+
+**Tier 3: Primary Intent** (order_pizza)
+- Main action trigger
+- Higher priority than detail-specification intents
+
+**Tier 4: Contextual Intents** (specify_size, specify_toppings)
+- Lowest priority in keyword matching
+- **Context-aware validation:** Only accepted when context expects them
+- If detected outside expected context, may indicate user starting order with details
+
+**Tier 5: Fallback** (unknown)
+- Default when no keywords match
+- Prompts user for clarification based on current conversation state
+
+### Context-Aware Intent Resolution
+
+When low-priority intents (specify_size, specify_toppings) are detected, the chatbot validates them against conversation context:
+
+**Example 1: Expected Context**
+```
+Context state: awaiting_size
+User input: "Large"
+Keywords match: specify_size
+Validation: Context expects size → ACCEPT specify_size intent
+```
+
+**Example 2: Unexpected Context**
+```
+Context state: idle
+User input: "Large pepperoni pizza"
+Keywords match: order_pizza (pizza), specify_size (large), specify_toppings (pepperoni)
+Priority order: order_pizza wins
+Result: Intent = order_pizza, but entities (size, toppings) still extracted
+```
+
+**Example 3: Conflict Resolution**
+```
+Context state: awaiting_toppings
+User input: "Actually, make it large"
+Keywords match: specify_size (large)
+Validation: Context expects toppings, not size → Interpret as modification request
+Result: Intent = specify_size, update size entity, maintain conversation flow
+```
+
+### Input / Output
 
 **Input:**
-
-* Raw user text (e.g. “I want to order a pizza”)
+- Raw user text (string)
+- Current conversation context (for validation)
 
 **Output:**
-
-* A single intent label representing the user’s goal (e.g. `order_pizza`)
+- Single intent label (string)
 
 ---
 
 ## 2. Entity Extraction
 
-**Purpose:**
-The entity extraction component identifies and extracts **specific pieces of information** from the user’s input that are relevant to fulfilling the intent.
+### Purpose
+The entity extraction component identifies and extracts **structured information** from user input that is required to fulfill their request.
 
-**How it works:**
-Entity extraction is performed using simple rule-based logic and predefined keyword lists. For the pizza chatbot, this includes detecting entities such as pizza size (small, medium, large) and toppings (e.g. pepperoni, mushrooms). The component scans the user’s message for known entity values and collects them in a structured form.
+### How It Works
+Entity extraction uses **rule-based pattern matching** with predefined keyword lists. It operates **independently** of intent recognition, scanning every user input for known entity values regardless of detected intent. This allows the chatbot to capture information even from ambiguous or unexpected inputs.
+
+**Key Features:**
+- **Intent-independent operation:** Extracts entities from all inputs
+- **Multiple entity support:** Single message can contain multiple entity types
+- **Dual-role keywords:** Entity keywords may also serve as intent triggers
+- **List aggregation:** Multiple values of same entity type collected in lists
+
+### Supported Entities
+
+The chatbot extracts two entity types:
+
+| Entity Type | Possible Values                              | Example Extraction               |
+|-------------|----------------------------------------------|----------------------------------|
+| size        | small, medium, large                         | "large" → {size: "large"}        |
+| toppings    | pepperoni, mushrooms, cheese, olives, onions | "pepperoni and mushrooms" → {toppings: ["pepperoni", "mushrooms"]} |
+
+### Entity Validation Rules
+
+- **Exact matches only:** "large" matches, "extra-large" does not
+- **Case-insensitive:** "Large", "LARGE", "large" all match
+- **Invalid values ignored:** Unknown entity values not stored
+- **Multiple toppings allowed:** Collected in a list
+- **Single size only:** Last mentioned size value used if multiple provided
+
+### Relationship with Intent Recognition
+
+Entity extraction and intent recognition work **in parallel**, both processing the same user input:
+
+**Dual-Role Keywords:**
+- Some keywords serve both as **intent triggers** (for intent recognition) and **entity values** (for entity extraction)
+- Example: "large" triggers `specify_size` intent AND represents `size: "large"` entity
+
+**Example Flow:**
+```
+User: "I want a large pepperoni pizza"
+
+Intent Recognition:
+- Keywords found: "want" (order_pizza), "large" (specify_size), "pepperoni" (specify_toppings), "pizza" (order_pizza)
+- Priority order: order_pizza (highest match)
+- Result: Intent = order_pizza
+
+Entity Extraction:
+- Keywords found: "large" (size entity), "pepperoni" (toppings entity)
+- Result: Entities = {size: "large", toppings: ["pepperoni"]}
+
+Both components succeed independently, results combined in context update.
+```
+
+### Handling Multiple Entities
+
+The chatbot can extract multiple entities from a single user message:
+
+**Example 1: Size and Toppings Together**
+```
+User: "Large with pepperoni and mushrooms"
+Extracted: {size: "large", toppings: ["pepperoni", "mushrooms"]}
+```
+
+**Example 2: Multiple Toppings Only**
+```
+User: "Pepperoni, mushrooms, and cheese"
+Extracted: {toppings: ["pepperoni", "mushrooms", "cheese"]}
+```
+
+**Example 3: No Entities**
+```
+User: "Hello"
+Extracted: {} (empty dictionary)
+```
+
+### Input / Output
 
 **Input:**
-
-* Raw user text
+- Raw user text (string)
 
 **Output:**
-
-* Structured entity data (e.g. `size = large`, `toppings = [pepperoni, mushrooms]`)
+- Dictionary of extracted entities (e.g., `{size: "large", toppings: ["pepperoni"]}`)
+- Empty dictionary `{}` if no entities found
 
 ---
 
 ## 3. Context Management
 
-**Purpose:**
-The context management component stores and updates the **conversation state** across multiple turns, allowing the chatbot to remember previous inputs and respond appropriately.
+### Purpose
+The context management component maintains **conversation state** across multiple turns, allowing the chatbot to remember previous inputs, track dialogue progress, and interpret short or ambiguous user messages correctly.
 
-**How it works:**
-The chatbot maintains a context object that represents the current state of the conversation. This context may include the current intent, the current step in the dialogue (e.g. awaiting size or awaiting toppings), and any entities that have already been collected. Context management ensures that short or ambiguous inputs (such as “Large”) can be correctly interpreted based on what has already happened in the conversation.
+### Definition of Context
 
-**Stored information may include:**
+Context represents the **current state of the conversation**, not the full chat history. It is a lightweight data structure that stores:
+- What the user is trying to do (current intent)
+- Where we are in the conversation flow (dialogue state)
+- What information has been collected so far (entities)
 
-* Current intent (e.g. `order_pizza`)
-* Conversation state (e.g. `awaiting_size`, `awaiting_toppings`)
-* Collected entities (size, toppings)
+**Context is NOT:**
+- A full transcript of the conversation
+- A database of all user interactions
+- Permanent storage (context is cleared when conversation ends)
+
+### Context Structure
+
+The context object uses a **flat dictionary structure** for simplicity:
+```python
+context = {
+    "current_intent": "order_pizza",           # Active intent
+    "state": "awaiting_toppings",              # Dialogue state
+    "entities": {                               # Collected information
+        "size": "large",
+        "toppings": ["pepperoni"]
+    }
+}
+```
+
+**Field Descriptions:**
+
+| Field          | Type   | Purpose                                           | Example Values                    |
+|----------------|--------|---------------------------------------------------|-----------------------------------|
+| current_intent | string | The active user intent                            | "order_pizza", "cancel_order"     |
+| state          | string | Current position in conversation flow             | "idle", "awaiting_size", "ready_to_confirm" |
+| entities       | dict   | All entities collected during current conversation| {size: "large", toppings: [...]}  |
+
+### Dialogue States
+
+The chatbot uses a **finite state machine (FSM)** with four states:
+
+| State              | Meaning                                      | Next Action                    |
+|--------------------|----------------------------------------------|--------------------------------|
+| idle               | No active conversation                       | Wait for order_pizza intent    |
+| awaiting_size      | Order started, need pizza size               | Prompt for size                |
+| awaiting_toppings  | Size received, need toppings                 | Prompt for toppings            |
+| ready_to_confirm   | All info collected, awaiting confirmation    | Show order summary, ask confirm|
+
+### State Transition Table
+
+This table defines **all valid transitions** between states based on user inputs:
+
+| Current State      | Event (Intent + Entities)        | Actions Taken                     | Next State         |
+|--------------------|----------------------------------|-----------------------------------|--------------------|
+| **idle**           |                                  |                                   |                    |
+| idle               | order_pizza                      | Initialize order context          | awaiting_size      |
+| idle               | order_pizza + size entity        | Store size, initialize order      | awaiting_toppings  |
+| idle               | order_pizza + size + toppings    | Store all, initialize order       | ready_to_confirm   |
+| idle               | greeting                         | Respond with greeting             | idle               |
+| idle               | cancel_order                     | "No active order to cancel"       | idle               |
+| idle               | unknown                          | "How can I help you?"             | idle               |
+| **awaiting_size**  |                                  |                                   |                    |
+| awaiting_size      | specify_size + size entity       | Store size                        | awaiting_toppings  |
+| awaiting_size      | order_pizza + size entity        | Store size                        | awaiting_toppings  |
+| awaiting_size      | cancel_order                     | Clear context, "Order cancelled"  | idle               |
+| awaiting_size      | greeting                         | "Hi! What size pizza?"            | awaiting_size      |
+| awaiting_size      | unknown                          | "Please specify: small, medium, or large" | awaiting_size |
+| **awaiting_toppings** |                               |                                   |                    |
+| awaiting_toppings  | specify_toppings + toppings      | Store toppings                    | ready_to_confirm   |
+| awaiting_toppings  | order_pizza + toppings           | Store toppings                    | ready_to_confirm   |
+| awaiting_toppings  | specify_size + size entity       | Update size (modification)        | awaiting_toppings  |
+| awaiting_toppings  | cancel_order                     | Clear context, "Order cancelled"  | idle               |
+| awaiting_toppings  | unknown                          | "What toppings would you like?"   | awaiting_toppings  |
+| **ready_to_confirm** |                                |                                   |                    |
+| ready_to_confirm   | confirm (yes/ok/confirm)         | Place order, "Order confirmed!"   | idle               |
+| ready_to_confirm   | cancel_order                     | Clear context, "Order cancelled"  | idle               |
+| ready_to_confirm   | specify_size + size entity       | Update size, back to confirm      | ready_to_confirm   |
+| ready_to_confirm   | specify_toppings + toppings      | Update toppings, back to confirm  | ready_to_confirm   |
+| ready_to_confirm   | unknown                          | "Say 'yes' to confirm or 'cancel' to cancel" | ready_to_confirm |
+
+### Context Update Strategy
+
+Context updates follow these rules:
+
+1. **Immediate entity storage:** When entities are extracted, add them to context immediately
+2. **State progression:** When required information is collected, advance to next state
+3. **Allow skip-ahead:** If multiple entities provided at once, skip intermediate states
+4. **Modification support:** Allow users to change previously provided information
+5. **Critical intent priority:** cancel_order and greeting override normal flow
+
+**Example: Skip-Ahead Logic**
+```
+State: awaiting_size
+User: "Large with pepperoni and mushrooms"
+Entities: {size: "large", toppings: ["pepperoni", "mushrooms"]}
+
+Context Update:
+1. Store size entity → would advance to awaiting_toppings
+2. Detect toppings also provided → skip awaiting_toppings
+3. Advance directly to ready_to_confirm
+
+Result: Single input completes multiple steps
+```
+
+### Role in Conversation Flow
+
+Context enables the chatbot to:
+
+1. **Interpret ambiguous inputs**
+   - "Large" → Context knows we're awaiting size → Interpret as size specification
+
+2. **Track conversation progress**
+   - Context state determines what to ask next
+
+3. **Handle modifications**
+   - User changes size after already providing it → Context updates, maintains flow
+
+4. **Maintain conversation coherence**
+   - Context prevents asking for information already provided
+
+5. **Enable natural multi-turn dialogue**
+   - Users don't need to repeat information across turns
+
+### Input / Output
+
+**Input:**
+- Detected intent (from intent recognition)
+- Extracted entities (from entity extraction)
+- Current context state
+
+**Output:**
+- Updated context object
+- Determination of next bot action (prompt, confirm, cancel, etc.)
 
 ---
 
 ## 4. Component Interaction (End-to-End Flow)
 
-When a user sends a message, the chatbot processes it in the following order:
+### Processing Pipeline
 
-1. **Intent recognition** analyzes the user input to determine the user’s goal.
-2. **Entity extraction** identifies and extracts relevant information from the same input.
-3. **Context management** updates the stored conversation state using the detected intent and entities.
-4. Based on the updated context, the chatbot generates a response that either asks for missing information or confirms the current order.
+When a user sends a message, the chatbot processes it through four stages:
+```
+User Input → [1. Intent Recognition] → [2. Entity Extraction] → [3. Context Update] → [4. Response Generation]
+                      ↓                         ↓                         ↓                    ↓
+                  Intent label            Entities dict             Updated context      Bot response
+```
 
-By combining these components, the chatbot can handle multi-turn interactions, remember user choices across messages, and maintain a coherent and structured conversation.
+### Detailed Flow
 
----
+**Stage 1: Intent Recognition**
+- Input: Raw user text + current context
+- Process: Scan for intent keywords with priority ordering
+- Validate: Check if low-priority intents match context expectations
+- Output: Single intent label
 
-## Part (b): Intent Recognition – Planning
+**Stage 2: Entity Extraction**
+- Input: Raw user text (same input, processed independently)
+- Process: Scan for entity keywords using predefined lists
+- Extract: Collect all matching entities (multiple allowed)
+- Output: Entities dictionary (may be empty)
 
-### Goal
+**Stage 3: Context Update**
+- Input: Intent label + entities dict + current context
+- Process: 
+  - Update entities in context
+  - Determine next dialogue state based on state transition table
+  - Handle special cases (cancel, modifications)
+- Output: Updated context object
 
-Design a simple intent recognition mechanism that identifies the user’s intent from a predefined list using keyword-based rules.
+**Stage 4: Response Generation**
+- Input: Updated context
+- Process: Generate appropriate response based on:
+  - Current dialogue state
+  - Missing vs. collected information
+  - Detected intent
+- Output: Bot response text
 
-### Predefined Intents
+### Error Handling
 
-The chatbot supports the following intents:
+**Unknown Intent:**
+- Intent recognition returns "unknown"
+- Entity extraction still attempted (may capture useful info)
+- Context NOT cleared (preserve conversation state)
+- Response: Ask for clarification based on current state
 
-* `greeting`
-* `order_pizza`
-* `specify_size`
-* `specify_toppings`
-* `cancel_order`
-* `unknown`
+**Invalid Entities:**
+- Entity values not in predefined lists are ignored
+- Context remains unchanged for invalid values
+- Response: Prompt for valid options
 
-### Strategy
+**Context Conflicts:**
+- Example: specify_size detected while awaiting_toppings
+- Interpretation: User modifying previous choice
+- Action: Update size entity, maintain conversation state
+- Response: Acknowledge modification, continue flow
 
-* User input is normalized (e.g. converted to lowercase, punctuation ignored).
-* Each intent is associated with a set of keywords.
-* The input text is checked for the presence of these keywords.
-* Intents are evaluated in a **fixed priority order** to avoid conflicts.
-* The first matching intent is returned.
-* If no keywords match, the intent `unknown` is returned.
+### Example End-to-End Execution
 
-### Intent–Keyword Mapping (Conceptual)
+**Turn 1:**
+```
+User: "I want to order a pizza"
 
-| Intent           | Example Keywords             |
-| ---------------- | ---------------------------- |
-| greeting         | hi, hello, hey               |
-| cancel_order     | cancel, stop, never mind     |
-| order_pizza      | pizza, order, get            |
-| specify_size     | small, medium, large         |
-| specify_toppings | pepperoni, mushrooms, cheese |
+Stage 1 - Intent Recognition:
+- Keywords: "want" (order_pizza), "order" (order_pizza), "pizza" (order_pizza)
+- Priority: order_pizza (rank 3)
+- Output: Intent = "order_pizza"
 
-### Input / Output Definition
+Stage 2 - Entity Extraction:
+- Scan for size: none found
+- Scan for toppings: none found
+- Output: Entities = {}
 
-* **Input:** Raw user text (string)
-* **Output:** One intent label (string)
+Stage 3 - Context Update:
+- Current state: idle
+- Transition: idle + order_pizza → awaiting_size
+- Update context: {current_intent: "order_pizza", state: "awaiting_size", entities: {}}
 
----
+Stage 4 - Response Generation:
+- State: awaiting_size
+- Missing: size entity
+- Response: "What size pizza would you like? We have small, medium, and large."
+```
 
-## Part (c): Entity Extraction – Planning
+**Turn 2:**
+```
+User: "Large"
+Context: {current_intent: "order_pizza", state: "awaiting_size", entities: {}}
 
-### Goal
+Stage 1 - Intent Recognition:
+- Keywords: "large" (specify_size)
+- Context validation: state = awaiting_size → specify_size expected
+- Output: Intent = "specify_size"
 
-Extract structured information (entities) from the user’s input that is required to complete a pizza order.
+Stage 2 - Entity Extraction:
+- Scan for size: "large" found
+- Output: Entities = {size: "large"}
 
-### Supported Entities
+Stage 3 - Context Update:
+- Current state: awaiting_size
+- Received: size entity
+- Transition: awaiting_size + size → awaiting_toppings
+- Update context: {current_intent: "order_pizza", state: "awaiting_toppings", entities: {size: "large"}}
 
-* `size` (e.g. small, medium, large)
-* `toppings` (one or more values, e.g. pepperoni, mushrooms)
+Stage 4 - Response Generation:
+- State: awaiting_toppings
+- Missing: toppings entity
+- Response: "Great! What toppings would you like? We have pepperoni, mushrooms, cheese, olives, and onions."
+```
 
-### Strategy
+**Turn 3:**
+```
+User: "Pepperoni and mushrooms"
+Context: {current_intent: "order_pizza", state: "awaiting_toppings", entities: {size: "large"}}
 
-* Use predefined keyword lists for each entity type.
-* Scan the normalized user input for known entity values.
-* Allow extraction of multiple entities from a single message.
-* Store extracted entities in a structured format.
+Stage 1 - Intent Recognition:
+- Keywords: "pepperoni" (specify_toppings), "mushrooms" (specify_toppings)
+- Output: Intent = "specify_toppings"
 
-### Handling Multiple Entities
+Stage 2 - Entity Extraction:
+- Scan for toppings: "pepperoni", "mushrooms" found
+- Output: Entities = {toppings: ["pepperoni", "mushrooms"]}
 
-* A single user message may contain more than one entity (e.g. size and toppings).
-* For toppings, multiple matches are allowed and collected in a list.
+Stage 3 - Context Update:
+- Current state: awaiting_toppings
+- Received: toppings entity
+- Transition: awaiting_toppings + toppings → ready_to_confirm
+- Update context: {current_intent: "order_pizza", state: "ready_to_confirm", entities: {size: "large", toppings: ["pepperoni", "mushrooms"]}}
 
-### Input / Output Definition
+Stage 4 - Response Generation:
+- State: ready_to_confirm
+- All info collected
+- Response: "Perfect! I have a large pizza with pepperoni and mushrooms. Should I place this order? (Say 'yes' to confirm or 'cancel' to cancel)"
+```
 
-* **Input:** Raw user text (string)
-* **Output:** Dictionary of extracted entities (e.g. `{size: "large", toppings: ["pepperoni"]}`)
+### Component Independence
 
----
+While components work together, they are **designed to be independent**:
 
-## Part (d): Context Management – Planning
+- **Intent recognition** doesn't know about entity extraction
+- **Entity extraction** doesn't know about intent recognition
+- **Context management** receives results from both and orchestrates the conversation
 
-### Goal
-
-Maintain conversation state across multiple turns so the chatbot can handle short, incremental user inputs and multi-step ordering.
-
-### Definition of Context
-
-Context represents the **current state of the conversation**, not the full chat history. It allows the chatbot to remember what information has already been provided and what is still missing.
-
-### Context Structure (Conceptual)
-
-The context is represented as a simple data object containing:
-
-* `current_intent` (e.g. `order_pizza`)
-* `state` (e.g. `idle`, `awaiting_size`, `awaiting_toppings`, `confirming`)
-* `size` (if provided)
-* `toppings` (if provided)
-
-### Context Update Rules
-
-* **Order starts:** Initialize context, set state to `awaiting_size`.
-* **Size provided:** Store size, update state to `awaiting_toppings`.
-* **Toppings provided:** Store toppings, move toward confirmation.
-* **Order canceled:** Clear context and return to `idle` state.
-
-### Role in Response Generation
-
-The current context determines:
-
-* how user input is interpreted (e.g. what a single word like “Large” means), and
-* what the chatbot should ask or say next.
+This modular design allows:
+- Independent testing of each component
+- Easy debugging (isolate which component has issues)
+- Future enhancements without affecting other components
+- Clear separation of concerns
 
 ---
 
 ## Summary
 
-Parts (b), (c), and (d) are designed to work together in a clear sequence:
+The chatbot architecture consists of three tightly integrated components:
 
-1. Intent recognition determines the user’s goal.
-2. Entity extraction retrieves relevant information from the input.
-3. Context management stores and updates the conversation state.
+1. **Intent Recognition** identifies user goals using priority-based keyword matching with context validation
+2. **Entity Extraction** captures structured information using rule-based pattern matching operating independently
+3. **Context Management** maintains conversation state using a finite state machine with defined transitions
 
-This planning phase ensures that the subsequent Python implementation is simple, structured, and aligned with the exercise requirements.
+These components work together through a clear processing pipeline, enabling the chatbot to:
+- Handle natural, multi-turn conversations
+- Interpret ambiguous user inputs using context
+- Skip conversation steps when users provide multiple details at once
+- Allow modifications to previously provided information
+- Maintain conversation coherence across turns
+
+The architecture balances **simplicity** (keyword-based, rule-based) with **sophistication** (context-awareness, state management), making it suitable for beginner implementation while demonstrating real-world chatbot design principles.
+
+---
+
+## Implementation Roadmap
+
+The following sections implement each component as Python code:
+
+**Part (b)** implements intent recognition:
+- Function: `recognize_intent(user_input, context) → intent_label`
+- Method: Keyword matching with priority ordering and context validation
+- Returns: String intent label
+
+**Part (c)** implements entity extraction:
+- Function: `extract_entities(user_input) → entities_dict`
+- Method: Rule-based pattern matching with predefined keyword lists
+- Returns: Dictionary of extracted entities
+
+**Part (d)** implements context management:
+- Class: `ContextManager` with methods for initialization, update, and state transitions
+- Maintains: Current intent, dialogue state, collected entities
+- Determines: Next bot action based on state machine
+
+These components will be integrated into a main chatbot loop that orchestrates the complete conversation flow.
