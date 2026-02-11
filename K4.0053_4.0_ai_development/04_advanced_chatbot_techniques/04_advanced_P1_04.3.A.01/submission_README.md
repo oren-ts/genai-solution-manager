@@ -1,9 +1,5 @@
 # Exercise 04.3.A.01 - Simple AI-Based Chatbot (Partial Exam 1)
 
-**Student:** Oren Tauber-Sharon  
-**Course:** K4.0053_4.0 - AI Development  
-**Date:** February 2026
-
 ---
 
 ## Overview
@@ -288,41 +284,6 @@ Integration and main loop:
 
 ---
 
-## Key Learnings
-
-### Architectural Insights
-1. **Context-aware intent resolution** handles ambiguous inputs more intelligently than simple keyword matching
-2. **Dual-role keywords** enable both intent detection and entity extraction from same input
-3. **FSM pattern** provides clear, maintainable conversation flow management
-4. **Skip-ahead logic** improves user experience by avoiding unnecessary prompts
-
-### Design Trade-offs
-1. **Specific vs. Minimal Intents:** Chose specific intents (specify_size, specify_toppings) for clearer semantics, requiring context validation
-2. **Priority Ordering:** Critical intents (cancel) override all others, ensuring user control
-3. **Component Independence:** Intent recognition and entity extraction operate separately, results combined in context update
-
-### Real-World Relevance
-- Architecture mirrors production chatbot frameworks (Dialogflow, Rasa)
-- Finite state machine pattern standard for dialogue management
-- Context-aware validation principle applies to complex NLU systems
-- Modular design enables independent testing and future enhancements
-
----
-
-## Portfolio Highlights
-
-This implementation demonstrates:
-
-✅ **Intent Design Principles** - Granular intents with priority-based resolution  
-✅ **State Management** - FSM with comprehensive state transition logic  
-✅ **NLU Component Integration** - Intent recognition and entity extraction working together  
-✅ **Real-World Patterns** - Architecture matches production chatbot systems  
-✅ **Problem-Solving** - Handling ambiguity, conflicts, and edge cases  
-
-**Professional Application:** The architectural patterns and design decisions in this exercise directly apply to building production chatbots for customer service, e-commerce, and conversational AI applications.
-
----
-
 ## Files Submitted
 
 1. **chatbot_components.py** - Core components implementation (Parts b, c, d)
@@ -345,7 +306,3 @@ python chatbot_main.py
 # - 'reset' - Start new conversation
 # - 'quit' - Exit
 ```
-
----
-
-**End of Submission**
