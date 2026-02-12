@@ -1,0 +1,14 @@
+# Data files
+dataset.json
+
+# Model training artifacts
+results/
+logs/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# IDE
+.DS_Store
