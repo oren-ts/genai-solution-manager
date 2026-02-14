@@ -1,0 +1,182 @@
+[
+  {
+    "conversation_id": "conv_001",
+    "timestamp_start": "2026-02-10T12:00:00Z",
+    "timestamp_last_activity": "2026-02-10T12:04:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 5,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_002",
+    "timestamp_start": "2026-02-10T12:10:00Z",
+    "timestamp_last_activity": "2026-02-10T12:16:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 4,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_003",
+    "timestamp_start": "2026-02-10T12:25:00Z",
+    "timestamp_last_activity": "2026-02-10T12:33:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 4,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_004",
+    "timestamp_start": "2026-02-10T12:45:00Z",
+    "timestamp_last_activity": "2026-02-10T12:50:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 5,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_005",
+    "timestamp_start": "2026-02-10T13:00:00Z",
+    "timestamp_last_activity": "2026-02-10T13:07:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 3,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_006",
+    "timestamp_start": "2026-02-10T13:15:00Z",
+    "timestamp_last_activity": "2026-02-10T13:24:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 4,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_007",
+    "timestamp_start": "2026-02-10T13:35:00Z",
+    "timestamp_last_activity": "2026-02-10T13:47:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 5,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_008",
+    "timestamp_start": "2026-02-10T14:00:00Z",
+    "timestamp_last_activity": "2026-02-10T14:11:00Z",
+    "outcome": "completed",
+    "flow_type": "identity_verification",
+    "csat_rating": 4,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_009",
+    "timestamp_start": "2026-02-10T14:30:00Z",
+    "timestamp_last_activity": "2026-02-10T14:46:00Z",
+    "outcome": "completed",
+    "flow_type": "payment",
+    "csat_rating": 5,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_010",
+    "timestamp_start": "2026-02-10T15:00:00Z",
+    "timestamp_last_activity": "2026-02-10T15:05:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": null,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_011",
+    "timestamp_start": "2026-02-10T15:20:00Z",
+    "timestamp_last_activity": "2026-02-10T15:27:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 4,
+    "repeat_within_24h": true
+  },
+  {
+    "conversation_id": "conv_012",
+    "timestamp_start": "2026-02-10T15:35:00Z",
+    "timestamp_last_activity": "2026-02-10T15:41:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 5,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_013",
+    "timestamp_start": "2026-02-10T15:55:00Z",
+    "timestamp_last_activity": "2026-02-10T16:04:00Z",
+    "outcome": "completed",
+    "flow_type": "standard",
+    "csat_rating": 4,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_014",
+    "timestamp_start": "2026-02-10T16:20:00Z",
+    "timestamp_last_activity": "2026-02-10T16:27:00Z",
+    "outcome": "completed",
+    "flow_type": "payment",
+    "csat_rating": 5,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_015",
+    "timestamp_start": "2026-02-10T16:50:00Z",
+    "timestamp_last_activity": "2026-02-10T17:00:00Z",
+    "outcome": "abandoned",
+    "flow_type": "standard",
+    "csat_rating": null,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_016",
+    "timestamp_start": "2026-02-10T17:10:00Z",
+    "timestamp_last_activity": "2026-02-10T17:22:00Z",
+    "outcome": "abandoned",
+    "flow_type": "standard",
+    "csat_rating": null,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_017",
+    "timestamp_start": "2026-02-10T17:40:00Z",
+    "timestamp_last_activity": "2026-02-10T17:55:00Z",
+    "outcome": "abandoned",
+    "flow_type": "payment",
+    "csat_rating": null,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_018",
+    "timestamp_start": "2026-02-10T18:10:00Z",
+    "timestamp_last_activity": "2026-02-10T18:24:00Z",
+    "outcome": "abandoned",
+    "flow_type": "identity_verification",
+    "csat_rating": null,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_019",
+    "timestamp_start": "2026-02-10T18:40:00Z",
+    "timestamp_last_activity": "2026-02-10T18:46:00Z",
+    "outcome": "escalated",
+    "flow_type": "standard",
+    "csat_rating": 2,
+    "repeat_within_24h": false
+  },
+  {
+    "conversation_id": "conv_020",
+    "timestamp_start": "2026-02-10T19:00:00Z",
+    "timestamp_last_activity": "2026-02-10T19:09:00Z",
+    "outcome": "escalated",
+    "flow_type": "standard",
+    "csat_rating": 3,
+    "repeat_within_24h": false
+  }
+]
