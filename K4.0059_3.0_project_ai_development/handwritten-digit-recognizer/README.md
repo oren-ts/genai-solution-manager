@@ -57,6 +57,30 @@ handwritten-digit-recognizer/
 
 ---
 
+## Task Package 2 — Neural Network Design and Implementation
+
+### What was done
+
+- Implemented the sigmoid activation function and its derivative from scratch using NumPy
+- Designed a three-layer architecture: 784 → 128 → 10 (input → hidden → output)
+- Initialized weights with small random values (×0.01) to break symmetry; biases initialized to zero
+- Chose binary cross-entropy as the loss function — pairs cleanly with sigmoid outputs
+- Set learning rate to 0.1 — standard starting point for sigmoid networks
+- Coded the forward pass manually: weighted sums + sigmoid activations, with intermediate values cached for backprop
+- Implemented backpropagation from scratch using the chain rule across both layers
+- Verified the full training loop: forward pass → loss → gradients → weight update → loss decreases
+
+### Key decisions
+
+| Decision | Rationale |
+|---|---|
+| Hidden size: 128 neurons | Large enough to learn digit features; small enough to train on CPU |
+| Weights ×0.01 | Keeps initial sigmoid inputs near zero where gradient is steepest |
+| Cross-entropy loss | Gradient simplifies to (ŷ - y) with sigmoid — avoids vanishing gradients |
+| Learning rate 0.1 | Standard starting point; tuned in Task Package 4 |
+
+---
+
 ## Results
 
 *(To be updated after Task Packages 3 and 4)*
