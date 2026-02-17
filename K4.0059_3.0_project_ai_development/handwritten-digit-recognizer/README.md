@@ -1,38 +1,91 @@
 # Handwritten Digit Recognizer
-
-**Course:** K4.0059 - AI Development (velpTEC / Agentur fuer Arbeit)
-**Stack:** Python � NumPy � PIL (Pillow) � Matplotlib
-**Dataset:** MNIST (70,000 handwritten digit images)
+  
+**Stack:** Python · NumPy · PIL (Pillow) · Matplotlib  
+**Dataset:** MNIST (70,000 handwritten digits, 28×28 px grayscale)  
+**Goal:** Build a digit-recognizing neural network from scratch. No ML frameworks.
 
 ---
 
 ## Project Overview
 
-<!-- To be filled after Task Package 1 -->
+This project implements a fully manual neural network for classifying handwritten digits (0–9) from the MNIST dataset. Every component: data loading, normalization, forward pass, backpropagation, and weight updates is written explicitly using only Python and NumPy. No PyTorch, TensorFlow, or sklearn.
 
-## Motivation
+The network architecture uses a single hidden layer with sigmoid activations throughout, trained with gradient descent and binary cross-entropy loss.
 
-<!-- To be filled after Task Package 1 -->
+---
 
 ## Repository Structure
 
-``nhandwritten-digit-recognizer/
-+-- README.md
-+-- .gitignore
-+-- notebooks/
-�   +-- full_walkthrough.ipynb
-+-- src/
-�   +-- task1_data_prep.py
-�   +-- task2_neural_network.py
-�   +-- task3_training.py
-�   +-- task4_optimization.py
-�   +-- task5_reflection.py
-+-- data/                        <- gitignored; not committed
-``n
+```
+handwritten-digit-recognizer/
+├── README.md
+├── .gitignore
+├── notebooks/
+│   └── full_walkthrough.ipynb     ← complete project walkthrough
+├── src/
+│   ├── task1_data_prep.py         ← data loading, normalization, array prep
+│   ├── task2_neural_network.py    ← network architecture, forward pass, backprop
+│   ├── task3_training.py          ← full training loop, evaluation
+│   ├── task4_optimization.py      ← hyperparameter tuning, overfitting checks
+│   └── task5_reflection.py        ← results summary, reflection
+└── data/                          ← gitignored — download locally via task1_data_prep.py
+```
+
+---
+
+## Task Package 1 — Data Preparation and Understanding
+
+### What was done
+
+- Explored core NumPy operations: array creation, reshaping, broadcasting, normalization
+- Explored core PIL operations: creating images from arrays, pixel inspection, image compositing
+- Downloaded MNIST in raw IDX binary format using `urllib` and parsed it manually with `struct`
+- Normalized pixel values from `uint8 [0, 255]` to `float32 [0.0, 1.0]`
+- Flattened 2D images `(28, 28)` → 1D vectors `(784,)` for network input
+- One-hot encoded integer labels `[0–9]` → binary vectors `(10,)` for loss computation
+- Verified final shapes: `X_train (60000, 784)`, `y_train (60000, 10)`, `X_test (10000, 784)`, `y_test (10000, 10)`
+- Saved prepared arrays as `.npy` files for use in subsequent task packages
+
+### Key decisions
+
+| Decision | Rationale |
+|---|---|
+| Parse IDX binary manually | No ML libraries allowed — uses `struct` + `np.frombuffer` |
+| Normalize to [0, 1] | Keeps sigmoid inputs in the responsive region of the activation function |
+| One-hot encode labels | Required to compute per-class gradients in backpropagation |
+| Save as `.npy` | Fast binary format — loads in milliseconds; kept out of git via `.gitignore` |
+
+---
+
 ## Results
 
-<!-- To be added after Task Package 3 -->
+*(To be updated after Task Packages 3 and 4)*
 
-## Reflection
+---
 
-<!-- To be added in Task Package 5 -->
+## Tech Stack
+
+| Tool | Version | Purpose |
+|---|---|---|
+| Python | 3.x | Core language |
+| NumPy | latest | Array math, matrix operations |
+| PIL / Pillow | latest | Image loading and visualization |
+| Matplotlib | latest | Training curves, result plots |
+
+---
+
+## How to Run
+
+```bash
+# 1. Install dependencies
+pip install numpy pillow matplotlib
+
+# 2. Run data preparation (downloads MNIST automatically)
+python src/task1_data_prep.py
+
+# 3. Open the full walkthrough notebook
+pip install notebook
+jupyter notebook notebooks/full_walkthrough.ipynb
+```
+
+---
