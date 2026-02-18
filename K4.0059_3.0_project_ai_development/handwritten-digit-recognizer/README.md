@@ -1,14 +1,15 @@
 # Handwritten Digit Recognizer
-  
+
+**Course:** K4.0059 — AI Development (velpTEC / Agentur für Arbeit)  
 **Stack:** Python · NumPy · PIL (Pillow) · Matplotlib  
 **Dataset:** MNIST (70,000 handwritten digits, 28×28 px grayscale)  
-**Goal:** Build a digit-recognizing neural network from scratch. No ML frameworks.
+**Goal:** Build a digit-recognizing neural network from scratch — no ML frameworks.
 
 ---
 
 ## Project Overview
 
-This project implements a fully manual neural network for classifying handwritten digits (0–9) from the MNIST dataset. Every component: data loading, normalization, forward pass, backpropagation, and weight updates is written explicitly using only Python and NumPy. No PyTorch, TensorFlow, or sklearn.
+This project implements a fully manual neural network for classifying handwritten digits (0–9) from the MNIST dataset. Every component — data loading, normalization, forward pass, backpropagation, and weight updates — is written explicitly using only Python and NumPy. No PyTorch, TensorFlow, or sklearn.
 
 The network architecture uses a single hidden layer with sigmoid activations throughout, trained with gradient descent and binary cross-entropy loss.
 
@@ -81,9 +82,35 @@ handwritten-digit-recognizer/
 
 ---
 
-## Results
+## Task Package 3 — Training and Model Evaluation
 
-*(To be updated after Task Packages 3 and 4)*
+### What was done
+
+- Implemented mini-batch gradient descent (batch_size=128) to solve vanishing gradient problem from full-batch training
+- Trained on 60,000 MNIST samples for 100 epochs with learning rate 0.1
+- Achieved **97.55% test accuracy** (9,755 / 10,000 correct predictions)
+- Generated training curves showing smooth loss decrease and accuracy increase
+- Created confusion matrix identifying most common error patterns: 4↔9, 5→3, 7→2
+- Analyzed per-digit accuracy — digit 9 has lowest accuracy at 95.9% (41 errors)
+- Visualized 20 misclassified samples to understand failure modes
+- Identified slight overfitting (test loss 0.017 vs train loss 0.012)
+
+### Key decisions
+
+| Decision | Rationale |
+|---|---|
+| Mini-batch size: 128 | Balances gradient noise (helps escape local minima) with computational efficiency |
+| Shuffle each epoch | Prevents the network from memorizing batch order; improves generalization |
+| 100 epochs | Loss plateaus around epoch 60; running to 100 ensures convergence |
+| Evaluate on full sets | Per-epoch evaluation on 60K train + 10K test gives accurate loss/accuracy tracking |
+
+### Results
+
+- **Final test accuracy:** 97.55%
+- **Training time:** ~3 minutes on CPU (100 epochs × 468 batches)
+- **Most confused pairs:** 4↔9 (13 errors each direction), 5→3 (12 errors), 7→2 (11 errors)
+- **Best performing digit:** 0 (99.0% accuracy)
+- **Worst performing digit:** 9 (95.9% accuracy)
 
 ---
 
@@ -113,3 +140,7 @@ jupyter notebook notebooks/full_walkthrough.ipynb
 ```
 
 ---
+
+## Author
+
+Oren · velpTEC K4.0059 · 2025
