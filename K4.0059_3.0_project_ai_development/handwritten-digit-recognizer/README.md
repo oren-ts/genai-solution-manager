@@ -151,6 +151,69 @@ handwritten-digit-recognizer/
 
 ---
 
+## Task Package 5 — Project Completion and Reflection
+
+### What was done
+
+- Conducted comprehensive project review identifying limitations and improvement opportunities
+- Documented lessons learned from building a neural network from scratch
+- Created executive summary suitable for non-technical stakeholders
+- Reflected on personal learning journey and planned future applications
+- Generated final presentation materials with sample predictions visualization
+
+### Key insights
+
+**Technical Lessons:**
+- Mini-batch gradient descent solved the vanishing gradient problem that plagued full-batch training
+- Sigmoid's maximum derivative of 0.25 creates inherent training challenges in deep networks
+- Hyperparameter tuning requires systematic search; clear patterns emerged from grid search visualization
+- "Right-sizing" the network (256 neurons, lr=0.2) eliminated overfitting without explicit regularization
+
+**Practical Lessons:**
+- Start with simple baseline, then optimize incrementally (128→256 neurons gave measurable gains)
+- Visualizations (loss curves, confusion matrices, heatmaps) communicate more effectively than raw numbers
+- Constraints drive creativity — building without frameworks forced deep understanding of fundamentals
+- 98% accuracy represents practical ceiling for this architecture; further gains require architectural changes
+
+### Future directions
+
+**Within current constraints:**
+- L2 regularization (weight decay) — expected +0.1-0.2% accuracy
+- Learning rate decay — smoother convergence
+- Data augmentation (rotations, translations) — expected +0.2-0.3% accuracy
+- Ensemble methods (5 models averaged) — expected +0.1-0.2% accuracy
+
+**Beyond current constraints:**
+- ReLU activation → faster convergence, deeper networks possible
+- Convolutional layers → exploit spatial structure, reach 99.5%+ accuracy
+- Batch normalization → stabilize training
+- Adam optimizer → adaptive per-parameter learning rates
+
+### Reflection
+
+Building this neural network from scratch provided invaluable insights into how these systems actually work. The constraint of using only sigmoid activation and no ML frameworks felt limiting at first, but ultimately forced a deep understanding that wouldn't have developed with high-level libraries.
+
+The progression from 11% (stuck with vanishing gradients) to 97.55% (mini-batch fix) to 98.18% (optimized hyperparameters) demonstrated that small implementation details have enormous practical impact. This project showed that understanding the fundamentals matters as much as knowing the latest techniques.
+
+**Next steps:** Apply these foundations to real-world problems, implement the same network in PyTorch to compare approaches, and explore more advanced architectures (CNNs, RNNs) now that the core concepts are solid.
+
+---
+
+## Final Summary
+
+This project successfully built a handwritten digit recognizer achieving **98.18% test accuracy** using only Python, NumPy, and PIL. The journey from raw pixel data to a working neural network required implementing every component manually: data preprocessing, forward propagation, backpropagation, gradient descent, and hyperparameter optimization.
+
+**Key Milestones:**
+- Task 1: Prepared 70,000 MNIST samples with normalization and encoding
+- Task 2: Implemented sigmoid neural network with manual backpropagation
+- Task 3: Achieved 97.55% accuracy through mini-batch gradient descent
+- Task 4: Optimized to 98.18% via systematic hyperparameter search
+- Task 5: Documented findings and reflected on learning journey
+
+The complete codebase is well-documented, reproducible, and serves as both a learning resource and a foundation for future ML projects.
+
+---
+
 ## Tech Stack
 
 | Tool | Version | Purpose |
