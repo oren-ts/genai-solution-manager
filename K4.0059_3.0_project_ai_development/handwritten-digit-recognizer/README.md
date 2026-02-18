@@ -1,15 +1,14 @@
 # Handwritten Digit Recognizer
-
-**Course:** K4.0059 — AI Development (velpTEC / Agentur für Arbeit)  
+  
 **Stack:** Python · NumPy · PIL (Pillow) · Matplotlib  
 **Dataset:** MNIST (70,000 handwritten digits, 28×28 px grayscale)  
-**Goal:** Build a digit-recognizing neural network from scratch — no ML frameworks.
+**Goal:** Build a digit-recognizing neural network from scratch —> no ML frameworks.
 
 ---
 
 ## Project Overview
 
-This project implements a fully manual neural network for classifying handwritten digits (0–9) from the MNIST dataset. Every component — data loading, normalization, forward pass, backpropagation, and weight updates — is written explicitly using only Python and NumPy. No PyTorch, TensorFlow, or sklearn.
+This project implements a fully manual neural network for classifying handwritten digits (0–9) from the MNIST dataset. Every component: data loading, normalization, forward pass, backpropagation, and weight updates — is written explicitly using only Python and NumPy. No PyTorch, TensorFlow, or sklearn.
 
 The network architecture uses a single hidden layer with sigmoid activations throughout, trained with gradient descent and binary cross-entropy loss.
 
