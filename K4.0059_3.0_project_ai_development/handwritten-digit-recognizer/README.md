@@ -1,14 +1,15 @@
 # Handwritten Digit Recognizer
-  
+
+**Course:** K4.0059 — AI Development (velpTEC / Agentur für Arbeit)  
 **Stack:** Python · NumPy · PIL (Pillow) · Matplotlib  
 **Dataset:** MNIST (70,000 handwritten digits, 28×28 px grayscale)  
-**Goal:** Build a digit-recognizing neural network from scratch —> no ML frameworks.
+**Goal:** Build a digit-recognizing neural network from scratch — no ML frameworks.
 
 ---
 
 ## Project Overview
 
-This project implements a fully manual neural network for classifying handwritten digits (0–9) from the MNIST dataset. Every component: data loading, normalization, forward pass, backpropagation, and weight updates — is written explicitly using only Python and NumPy. No PyTorch, TensorFlow, or sklearn.
+This project implements a fully manual neural network for classifying handwritten digits (0–9) from the MNIST dataset. Every component — data loading, normalization, forward pass, backpropagation, and weight updates — is written explicitly using only Python and NumPy. No PyTorch, TensorFlow, or sklearn.
 
 The network architecture uses a single hidden layer with sigmoid activations throughout, trained with gradient descent and binary cross-entropy loss.
 
@@ -110,6 +111,43 @@ handwritten-digit-recognizer/
 - **Most confused pairs:** 4↔9 (13 errors each direction), 5→3 (12 errors), 7→2 (11 errors)
 - **Best performing digit:** 0 (99.0% accuracy)
 - **Worst performing digit:** 9 (95.9% accuracy)
+
+---
+
+## Task Package 4 — Optimization and Fine-Tuning
+
+### What was done
+
+- Conducted grid search over 9 configurations: 3 hidden sizes (64, 128, 256) × 3 learning rates (0.05, 0.1, 0.2)
+- Each configuration trained for up to 100 epochs with early stopping (patience=10)
+- Implemented early stopping to prevent overfitting by monitoring test loss
+- Identified best configuration: **hidden_size=256, learning_rate=0.2**
+- Achieved **98.18% test accuracy** — a +0.63% improvement over the Task 3 baseline (97.55%)
+- Generated heatmap visualization showing clear pattern: larger networks + faster learning rates perform better
+- Compared training with/without early stopping — optimal config didn't trigger early stopping (continued improving)
+
+### Key decisions
+
+| Decision | Rationale |
+|---|---|
+| Grid search space | Tested 3 values per hyperparameter — balances thoroughness with computational cost |
+| Early stopping patience: 10 | Allows temporary plateaus while catching genuine overfitting |
+| Batch size: 128 (unchanged) | Worked well in Task 3; kept constant to isolate other variables |
+| Sigmoid only | Assignment requirement — stayed within constraints |
+
+### Results
+
+- **Final test accuracy:** 98.18% (182 errors out of 10,000 test samples)
+- **Improvement over baseline:** +0.63 percentage points
+- **Optimal configuration:** 256 hidden neurons, learning rate 0.2
+- **Training time:** ~3 minutes per configuration × 9 configurations = ~27 minutes total
+- **Early stopping:** Did not trigger with optimal config — model continued improving through all 100 epochs
+
+### Lessons learned
+
+- **Network capacity matters:** Doubling hidden layer size (128→256) provided measurable gains
+- **Learning rate tuning pays off:** 0.2 outperformed 0.1, suggesting sigmoid networks can handle aggressive updates with proper architecture
+- **Diminishing returns:** 98.18% is near the practical ceiling for this architecture — further gains would require architectural changes (deeper networks, different activations) which are outside assignment scope
 
 ---
 
