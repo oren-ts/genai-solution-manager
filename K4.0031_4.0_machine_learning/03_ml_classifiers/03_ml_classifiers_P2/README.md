@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This script compares two supervised classification algorithms — a Decision Tree and a K-Nearest Neighbors (KNN) classifier — on a synthetically generated dataset. The dataset consists of three classes with two features each, designed with deliberate overlap to simulate real-world classification challenges.
+This script compares two supervised classification algorithms, a Decision Tree and a K-Nearest Neighbors (KNN) classifier, on a synthetically generated dataset. The dataset consists of three classes with two features each, designed with deliberate overlap to simulate real-world classification challenges.
 
 ---
 
@@ -71,7 +71,7 @@ y_pred_tree = decision_tree_classifier.predict(X_test)
 
 KNN is a non-parametric algorithm that makes predictions based on proximity. For each test point, it finds the `k` closest training points and assigns the majority class label among them. With `k=5`, each prediction is determined by a vote among the 5 nearest neighbours.
 
-Unlike the Decision Tree, KNN has no explicit training phase — it simply stores the training data and performs all computation at prediction time. This makes it flexible but sensitive to local noise and class overlap.
+Unlike the Decision Tree, KNN has no explicit training phase, it simply stores the training data and performs all computation at prediction time. This makes it flexible but sensitive to local noise and class overlap.
 
 ### Code
 
@@ -85,7 +85,7 @@ y_pred_knn = knn_classifier.predict(X_test)
 
 ## Task d) Model Evaluation
 
-Both models are evaluated using accuracy — the proportion of correctly classified test samples.
+Both models are evaluated using accuracy, the proportion of correctly classified test samples.
 
 $$\text{Accuracy} = \frac{\text{Number of correct predictions}}{\text{Total number of predictions}}$$
 
@@ -108,7 +108,7 @@ print(f"KNN Accuracy:           {knn_accuracy:.2f}")
 
 ## Task e) Model Comparison and Discussion
 
-Both models achieve identical accuracy of 0.76 on the test set — meaning both correctly classified 34 out of 45 test samples.
+Both models achieve identical accuracy of 0.76 on the test set,  meaning both correctly classified 34 out of 45 test samples.
 
 ### Why the results are equal
 
@@ -116,12 +116,12 @@ The dataset was deliberately designed with class overlap. Points from different 
 
 The two models reach this limit through fundamentally different mechanisms:
 
-- The **Decision Tree** partitions the feature space using a fixed set of axis-aligned splits. With `max_depth=3`, it can make at most 7 decisions across the entire space — a deliberately limited and global boundary.
+- The **Decision Tree** partitions the feature space using a fixed set of axis-aligned splits. With `max_depth=3`, it can make at most 7 decisions across the entire space, a deliberately limited and global boundary.
 - **KNN** adapts locally, basing each prediction on the 5 nearest training points. However, in regions of class overlap, those nearest neighbours carry mixed labels, so the majority vote is unreliable.
 
 ### Resolution of the test set
 
-With only 45 test samples, accuracy changes in steps of `1/45 ≈ 0.022`. A difference of a single correctly classified point would shift accuracy by that amount. An identical score of 0.76 therefore does not prove the models are equivalent — it means the test set resolution is too coarse to detect a difference, if one exists.
+With only 45 test samples, accuracy changes in steps of `1/45 ≈ 0.022`. A difference of a single correctly classified point would shift accuracy by that amount. An identical score of 0.76 therefore does not prove the models are equivalent, it means the test set resolution is too coarse to detect a difference, if one exists.
 
 ### Conclusion
 
